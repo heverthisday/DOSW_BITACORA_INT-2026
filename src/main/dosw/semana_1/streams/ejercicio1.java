@@ -11,7 +11,7 @@ public class ejercicio1 {
         System.out.println(mayoresPar);
     }
 
-    public static void main(String[] args) {
+    static void main() {
         numero1();
     }
 
