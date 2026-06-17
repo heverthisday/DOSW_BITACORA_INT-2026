@@ -22,7 +22,7 @@ public class ejercicio1 {
             new Pokemon("Pikachu","Electrico",45),
             new Pokemon("Charmarder","Fuego",62),
             new Pokemon("Squirtle","Agua",38),
-            new Pokemon("Vulpix","Fuego",71),
+            new Pokemon("Vulpix","Fuego",81),
             new Pokemon("Bulbasaur","Planta",55),
             new Pokemon("Flareon","Fuego",29)
     );
