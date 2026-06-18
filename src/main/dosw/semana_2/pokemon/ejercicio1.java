@@ -7,24 +7,27 @@ public class ejercicio1 {
         String name;
         String type;
         int level;
+        boolean evolucion;
 
-        public Pokemon(String name, String type, int level) {
+        public Pokemon(String name, String type, int level, boolean evolucion) {
             this.name=name;
             this.type=type;
             this.level=level;
+            this.evolucion = evolucion;
         }
         public String getName(){return name;}
         public String getType(){return type;}
         public int getLevel(){return level;}
+        public boolean getEvolucion(){return evolucion;}
     }
 
     public static List<Pokemon> pokemons = List.of(
-            new Pokemon("Pikachu","Electrico",45),
-            new Pokemon("Charmarder","Fuego",62),
-            new Pokemon("Squirtle","Agua",38),
-            new Pokemon("Vulpix","Fuego",81),
-            new Pokemon("Bulbasaur","Planta",55),
-            new Pokemon("Flareon","Fuego",29)
+            new Pokemon("Pikachu","Electrico",45,true),
+            new Pokemon("Charmarder","Fuego",62,true),
+            new Pokemon("Squirtle","Agua",38,true),
+            new Pokemon("Vulpix","Fuego",81,true),
+            new Pokemon("Bulbasaur","Planta",55,true),
+            new Pokemon("Flareon","Fuego",29,true)
     );
 
     public static void main(String[] args){
