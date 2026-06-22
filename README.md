@@ -1,4 +1,3 @@
-
 # DOSW BITACORA — Programacion Funcional con Java Streams
 
 **Asignatura:** DOSW  
@@ -8,13 +7,13 @@
 
 ---
 
-## Datos del Entrenador
+## Datos del Estudiante
 
-| Campo              | Informacion        |
-|--------------------|--------------------|
-| Nombre y Apellido  | Hever Barrera Batero |
+| Campo | Informacion |
+|---|---|
+| Nombre y Apellido | Hever Barrera Batero |
 | Codigo de Estudiante | 1000094509 |
-| Curso              | DOSW |
+| Curso | DOSW |
 
 ---
 
@@ -45,12 +44,12 @@ DOSW_BITACORA/
 
 ## Estrategia de Ramas (Git Flow)
 
-| Rama                              | Proposito                                              |
-|-----------------------------------|--------------------------------------------------------|
-| `main`                            | Rama principal — solo funcionalidades consolidadas     |
-| `develop`                         | Integracion de semanas completadas                     |
-| `feature/semana-n-dosw`           | Rama de trabajo por semana                             |
-| `feature/semana-n-dosw-ejercicio-n` | Rama individual por ejercicio                        |
+| Rama | Proposito |
+|---|---|
+| `main` | Rama principal — solo funcionalidades consolidadas |
+| `develop` | Integracion de semanas completadas |
+| `feature/semana-n-dosw` | Rama de trabajo por semana |
+| `feature/semana-n-dosw-ejercicio-n` | Rama individual por ejercicio |
 
 ---
 
@@ -64,6 +63,7 @@ DOSW_BITACORA/
 ## Indice de Navegacion
 
 ### [SEMANA 1 — Manejo de Streams](#semana-no-1--dosw-manejo-de-streams)
+
 - [Ejercicio 01 — Numeros Pares Mayores a Diez](#ejercicio-01--numeros-pares-mayores-a-diez)
 - [Ejercicio 02 — Cantidad de Palabras con Mas de 4 Caracteres](#ejercicio-02--cantidad-de-palabras-con-mas-de-4-caracteres)
 - [Ejercicio 03 — Obtener Nombres de los Usuarios](#ejercicio-03--obtener-nombres-de-los-usuarios)
@@ -106,13 +106,29 @@ DOSW_BITACORA/
 - [Reto Legendario — Method References](#reto-legendario--method-references)
 - [Reto Mewtwo — Ejercicio Propuesto](#reto-mewtwo--ejercicio-propuesto)
 
----
+### [SEMANA 3 — Analisis de Requerimientos, Principios SOLID y Patrones de Diseno](#semana-no-3--analisis-de-requerimientos-principios-solid-y-patrones-de-diseno)
+
+- [#01 — Plataforma de Pagos Inteligentes](#01--plataforma-de-pagos-inteligentes)
+- [#02 — Sistema de Notificaciones Multicanal](#02--sistema-de-notificaciones-multicanal)
+- [#03 — Sistema de Reportes Empresariales](#03--sistema-de-reportes-empresariales)
+- [#04 — Plataforma de Videojuegos — Personajes](#04--plataforma-de-videojuegos--personajes)
+- [#05 — Integracion con Sistema Bancario Antiguo](#05--integracion-con-sistema-bancario-antiguo)
+- [#06 — Motor de Recomendaciones](#06--motor-de-recomendaciones)
+- [#07 — Flujo de Aprobacion de Documentos](#07--flujo-de-aprobacion-de-documentos)
+- [#08 — Sistema de Pedidos en Restaurante](#08--sistema-de-pedidos-en-restaurante)
+- [#09 — Sistema de Autenticacion Empresarial](#09--sistema-de-autenticacion-empresarial)
+- [#10 — Aplicacion de Edicion de Imagenes](#10--aplicacion-de-edicion-de-imagenes)
+- [Analisis de Requerimientos — RF-01](#analisis-de-requerimientos--ejercicio)
+
+### [SEMANA 4 — Proximamente](#semana-no-4--proximamente)
 
 ---
 
 # SEMANA No 1 — DOSW Manejo de Streams
 
 **Paquete:** `src/main/dosw/semana_1/streams/`
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -151,6 +167,8 @@ public class ejercicio1 {
 
 **Explicacion:** Se aplica un `filter()` con doble condicion: que el numero sea mayor a 10 y que sea par (`n % 2 == 0`). Los elementos que cumplan ambas condiciones se recolectan en una nueva lista.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 02 — Cantidad de Palabras con Mas de 4 Caracteres
@@ -187,6 +205,8 @@ static void main() {
 <img width="229" height="58" alt="image" src="https://github.com/user-attachments/assets/a15d1c52-585e-4491-a198-0e00c2cd675d" />
 
 **Explicacion:** El stream filtra palabras segun longitud, luego las transforma a mayusculas con `map()` aplicando una referencia de metodo, las ordena con `sorted()` y recolecta el resultado en una lista.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -256,6 +276,8 @@ public class ejercicio3 {
 
 **Explicacion:** Se encadenan tres transformaciones sobre objetos `User`: primero se filtra por el atributo `active`, luego se extrae el nombre y se convierte a mayusculas con dos `map()` independientes, y finalmente se ordena alfabeticamente. Se usan referencias de metodo (`::`) en todos los pasos posibles.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 04 — Personas Mayores de Edad
@@ -293,6 +315,8 @@ public class ejercicio4 {
 <img width="208" height="57" alt="image" src="https://github.com/user-attachments/assets/d66def30-8a3c-4669-85cf-537c23db81ae" />
 
 **Explicacion:** Se reutiliza la lista de usuarios del ejercicio anterior mediante `import static`. El `filter()` evalua la edad directamente sobre el atributo `age` y el `map()` extrae el nombre de cada usuario que pase el umbral de 18 anos.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -350,13 +374,15 @@ public class ejercicio5 {
 
 **Explicacion:** `peek()` actua como un interceptor de depuracion que imprime cada transaccion sin interrumpir el flujo del stream. Luego `anyMatch()` evalua si al menos un elemento cumple la condicion de no estar aprobado, retornando un booleano como resultado terminal.
 
----
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
 # SEMANA No 2 — Bitacora Pokemon
 
 **Paquete:** `src/main/dosw/semana_2/pokemon/`
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -422,6 +448,8 @@ public class ejercicio1 {
 
 **Explicacion:** El `filter()` compara el atributo `type` de cada Pokemon con la cadena `"Fuego"` usando `equals()`. Los que pasan el filtro se proyectan a su nombre con `map()` y se recolectan en una lista.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 02 — Pokedex Gritona
@@ -458,6 +486,8 @@ public class ejercicio2 {
 <img width="513" height="56" alt="image" src="https://github.com/user-attachments/assets/914d1b19-59c5-450e-9e24-39db966c0668" />
 
 **Explicacion:** Un unico `map()` obtiene el nombre de cada Pokemon y encadena directamente `toUpperCase()` sobre el String resultante, transformando toda la lista en una sola operacion intermedia.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -496,6 +526,8 @@ public class ejercicio3 {
 
 **Explicacion:** Se usa `mapToInt()` para convertir el stream de objetos `Pokemon` a un `IntStream` primitivo, lo que permite llamar directamente al metodo terminal `sum()` sin necesidad de un `reduce()` explicito.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 04 — Pokemon Alfa
@@ -527,6 +559,8 @@ public class ejercicio4 {
 <img width="333" height="47" alt="image" src="https://github.com/user-attachments/assets/1c45d3b8-98fc-4ce0-9387-35e4ff82730b" />
 
 **Explicacion:** `max()` recibe un `Comparator` construido con `Comparator.comparing()` sobre el nivel del Pokemon. Devuelve un `Optional` con el elemento mayor, al que se le aplica un segundo `map()` para extraer solo el nombre.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -564,6 +598,8 @@ public class ejercicio5 {
 <img width="331" height="59" alt="image" src="https://github.com/user-attachments/assets/976c4496-0ab7-4e6e-ab02-a45aecfbbcf6" />
 
 **Explicacion:** Se ejecutan dos streams independientes sobre la misma lista: el primero usa `count()` como operacion terminal para obtener la cantidad, y el segundo recolecta los nombres de los Pokemon elite para mostrarlos en consola.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -603,6 +639,8 @@ public class ejercicio6 {
 
 **Explicacion:** Primero se proyectan los objetos `Pokemon` a sus nombres con `map()`, y luego `distinct()` elimina los duplicados basandose en `equals()` de String, garantizando que cada nombre aparezca una sola vez.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 07 — Orden del Profesor Oak
@@ -636,6 +674,8 @@ public class ejercicio7 {
 <img width="501" height="37" alt="image" src="https://github.com/user-attachments/assets/b9e002cb-81bc-43f1-9338-9613ee7cb6a7" />
 
 **Explicacion:** Tras extraer los nombres con `map()`, `sorted()` sin argumentos aplica el orden natural de `String` (alfabetico), lo que genera la lista en orden lexicografico ascendente.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -671,6 +711,8 @@ public class ejercicio8 {
 <img width="499" height="48" alt="image" src="https://github.com/user-attachments/assets/5eff973d-7ee1-4cf0-b538-94f97c6eb04e" />
 
 **Explicacion:** El `filter()` evalua el atributo booleano `evolucion` de cada Pokemon. Solo los que tengan ese flag en `true` pasan al `map()` donde se extrae su nombre para conformar la lista final.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -710,6 +752,8 @@ public class ejercicio9 {
 
 **Explicacion:** Se filtra por el atributo `power` usando `getPower() > 500` y se proyectan los nombres con `map()`. Este ejercicio introduce la clase `pokemon` del nivel 3 que incluye el atributo `poderCombate`.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 10 — Pokedex Compacta
@@ -743,6 +787,8 @@ public class ejercicio10 {
 
 **Explicacion:** Operacion de proyeccion pura: `map()` transforma cada objeto `Pokemon` en su nombre (String), y `collect()` agrupa todos los nombres en una `List<String>`.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 11 — Poder Promedio
@@ -774,6 +820,8 @@ public class ejercicio11 {
 <img width="358" height="52" alt="image" src="https://github.com/user-attachments/assets/4022ce2d-3f39-43f9-ad77-857669693904" />
 
 **Explicacion:** `mapToDouble()` convierte el stream a un `DoubleStream` primitivo sobre el cual se puede llamar directamente `average()`, que retorna un `OptionalDouble` con el valor promedio calculado.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -809,6 +857,8 @@ public class ejercicio12 {
 
 **Explicacion:** Se usa `max()` con un comparador basado en `getName()` y sobre el `Optional` resultante se aplica `map()` para construir una cadena con el nombre y el poder del campeon.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 13 — Organizar por Tipo
@@ -832,9 +882,6 @@ import java.util.*;
 import java.util.stream.*;
 import static main.dosw.semana_2.pokemon.pokemon.*;
 
-import java.util.*;
-import java.util.stream.*;
-
 public class ejercicio13 {
     public static void main(String[] args) {
 
@@ -857,6 +904,8 @@ public class ejercicio13 {
 <img width="263" height="200" alt="image" src="https://github.com/user-attachments/assets/3691fcc3-a362-4caf-8f85-1d4ed2b13a66" />
 
 **Explicacion:** `Collectors.groupingBy()` agrupa los objetos `Pokemon` en un `Map` donde la clave es el tipo. Luego se recorre el mapa con `forEach()` y para cada grupo se extrae la lista de nombres con un stream anidado.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -905,6 +954,8 @@ public class ejercicio14 {
 
 **Explicacion:** Misma logica que el ejercicio 13 pero usando `getRegion()` como criterio de agrupacion. Cada entrada del mapa representa una region con su lista de Pokemon asociados.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ## Nivel 4 — Alto Mando: Objetos Anidados y Comparaciones
@@ -951,6 +1002,8 @@ public class ejercicio15 {
 
 **Explicacion:** Se aplica `max()` sobre la lista de entrenadores usando un comparador por nombre. El `Optional` resultante se transforma con `map()` para construir la cadena de salida que muestra el nombre y las medallas del campeon.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ### Ejercicio 16 — Entrenadores Experimentados
@@ -986,6 +1039,8 @@ public class ejercicio16 {
 <img width="216" height="59" alt="image" src="https://github.com/user-attachments/assets/693e68b9-5169-4603-88a7-257cbaf73dc3" />
 
 **Explicacion:** `filter()` evalua el numero de medallas de cada entrenador y descarta los que tengan 5 o menos. Los que pasan el umbral se proyectan a su nombre con `map()` y se recolectan en la lista final.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -1047,6 +1102,8 @@ public class ejercicio17 {
 
 **Explicacion:** El comparador de `max()` calcula en tiempo real la suma del poder de cada equipo mediante un stream anidado sobre `getEquipo()`. Una vez encontrado el mejor entrenador, se recalcula el total en el `map()` del `Optional` para construir el mensaje de salida.
 
+[↑ Volver al indice](#indice-de-navegacion)
+
 ---
 
 ## Nivel 5 — Campeon de la Liga Pokemon DOSW: Analisis Avanzado y Rankings
@@ -1099,6 +1156,8 @@ public class ejercicio18 {
 <img width="281" height="150" alt="image" src="https://github.com/user-attachments/assets/72124da4-6a23-4d23-8494-b321033eac5a" />
 
 **Explicacion:** `sorted()` con comparador invertido (`reversed()`) ordena de mayor a menor poder. `limit(5)` corta el stream tras los cinco primeros. El `map()` construye cada linea del ranking usando un array de una posicion como contador mutable, ya que las lambdas no pueden capturar variables locales que cambien.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -1159,6 +1218,8 @@ public class ejercicio19 {
 <img width="310" height="97" alt="image" src="https://github.com/user-attachments/assets/98af19ee-60b5-4cdc-bc40-d7f446fa8cbd" />
 
 **Explicacion:** Se construye un comparador encadenado con tres criterios usando `thenComparingDouble()` y `thenComparing()`. El segundo `reversed()` invierte tanto el criterio de medallas como el de poder acumulado juntos. `limit(3)` recorta el podio y el `map()` formatea cada posicion con el contador mutable en array.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -1233,7 +1294,7 @@ public class ejercicio20 {
 
 **Explicacion:** Se ejecutan cinco streams independientes sobre la misma lista, cada uno con una responsabilidad analitica distinta: agrupacion con conteo (`groupingBy` + `counting`), conteo simple con `filter` + `count`, promedio con `averagingInt`, y busqueda del maximo con `comparingDouble`. Cada resultado se guarda en su propia variable antes de imprimirse.
 
----
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -1242,9 +1303,11 @@ public class ejercicio20 {
 **Ejercicios resueltos con Method Reference:**
 
 | Ejercicio | Ejemplo de uso |
-|-----------|----------------|
-| Ej. XX    | `.map(Pokemon::getNombre)` |
-| Ej. XX    | `...` |
+|---|---|
+| Ej. XX | `.map(Pokemon::getNombre)` |
+| Ej. XX | `...` |
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
@@ -1293,30 +1356,39 @@ public class retoMewtwo {
 
 **Explicacion:** Primero se excluyen los legendarios con `filter()` y se agrupa el poder restante por region usando `groupingBy()` con el colector `summingDouble()`. Esto produce un `Map<String, Double>`. Luego se crea un segundo stream sobre las entradas del mapa para encontrar la region con mayor poder acumulado usando `Map.Entry.comparingByValue()`.
 
----
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-# SEMANA No 3 — analisis de requerimientos, principios solid y patrones de diseño
+# SEMANA No 3 — Analisis de Requerimientos, Principios SOLID y Patrones de Diseno
 
-# Taller de Refuerzo — Patrones de Diseño Combinados 
-**DOSW Company — Escuela Colombiana de Ingeniería Julio Garavito**
+**Paquete:** `src/main/dosw/semana_3/`
 
-> Para cada ejercicio se presenta: (1) rol de cada patrón, (2) interacción entre ambos, (3) esquema de clases completo en Java **compilable y ejecutable**, con un `main` que demuestra el funcionamiento, y (4) diagrama UML.
+## Taller de Refuerzo — Patrones de Diseno Combinados
+
+**DOSW Company — Escuela Colombiana de Ingenieria Julio Garavito**
+
+> Para cada ejercicio se presenta: (1) rol de cada patron, (2) interaccion entre ambos, (3) esquema de clases completo en Java compilable y ejecutable con un `main` que demuestra el funcionamiento, y (4) diagrama UML.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
 ## #01 — Plataforma de Pagos Inteligentes
+
 **Patrones:** Strategy + Factory Method
 
-### Rol de cada patrón
-- **Strategy:** encapsula el algoritmo de pago de cada medio (Tarjeta, PSE, Nequi, PayPal) detrás de una interfaz común `PaymentStrategy`. El `Checkout` nunca sabe cuál implementación está usando.
-- **Factory Method:** decide, según el país del usuario, qué `PaymentStrategy` concreta debe construirse (`ColombiaPaymentFactory`, `UsaPaymentFactory`), sin que el cliente conozca la clase concreta.
+### Rol de cada patron
 
-### Cómo interactúan
-El usuario indica su país → la Factory correspondiente construye la `PaymentStrategy` adecuada → el `Checkout` invoca `strategy.process(amount)` sin conocer la clase concreta. La Factory decide **qué** Strategy instanciar; el Checkout **nunca cambia**.
+**Strategy** encapsula el algoritmo de pago de cada medio (Tarjeta, PSE, Nequi, PayPal) detras de una interfaz comun `PaymentStrategy`. El `Checkout` nunca sabe cual implementacion esta usando.
 
-### Código funcional
+**Factory Method** decide, segun el pais del usuario, que `PaymentStrategy` concreta debe construirse (`ColombiaPaymentFactory`, `UsaPaymentFactory`), sin que el cliente conozca la clase concreta.
+
+### Como interactuan
+
+El usuario indica su pais → la Factory correspondiente construye la `PaymentStrategy` adecuada → el `Checkout` invoca `strategy.process(amount)` sin conocer la clase concreta. La Factory decide **que** Strategy instanciar; el Checkout **nunca cambia**.
+
+### Codigo funcional
 
 ```java
 import java.util.*;
@@ -1397,7 +1469,7 @@ public class Ejercicio01 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -1431,22 +1503,29 @@ classDiagram
     Checkout --> PaymentStrategy : usa
 ```
 
-### Justificación
-Sin esta combinación, `Checkout` tendría un `if/switch` gigante mezclando lógica de país **y** de medio de pago, violando SRP. Con Strategy + Factory Method cada responsabilidad vive en su propia jerarquía: **cómo pagar** (Strategy) y **quién construye el que paga** (Factory). Agregar un nuevo medio o país no requiere tocar `Checkout`.
+### Justificacion
+
+Sin esta combinacion, `Checkout` tendria un `if/switch` gigante mezclando logica de pais y de medio de pago, violando SRP. Con Strategy + Factory Method cada responsabilidad vive en su propia jerarquia: **como pagar** (Strategy) y **quien construye el que paga** (Factory). Agregar un nuevo medio o pais no requiere tocar `Checkout`.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
 ## #02 — Sistema de Notificaciones Multicanal
+
 **Patrones:** Observer + Factory Method
 
-### Rol de cada patrón
-- **Observer:** desacopla el `Pedido` (Subject) de los canales de notificación (`EmailNotifier`, `SmsNotifier`, `PushNotifier`). Agregar un canal nuevo no modifica el Pedido.
-- **Factory Method:** cada `Notifier` usa una `MessageFactory` propia para construir el mensaje con el formato correcto de su canal (HTML, texto plano, JSON).
+### Rol de cada patron
 
-### Cómo interactúan
-El Pedido cambia de estado → notifica a todos los Observers activos → cada Observer llama a su Factory para construir el mensaje correcto para ese canal → envía.
+**Observer** desacopla el `Pedido` (Subject) de los canales de notificacion (`EmailNotifier`, `SmsNotifier`, `PushNotifier`). Agregar un canal nuevo no modifica el Pedido.
 
-### Código funcional
+**Factory Method** cada `Notifier` usa una `MessageFactory` propia para construir el mensaje con el formato correcto de su canal (HTML, texto plano, JSON).
+
+### Como interactuan
+
+El Pedido cambia de estado → notifica a todos los Observers activos → cada Observer llama a su Factory para construir el mensaje correcto para ese canal → envia.
+
+### Codigo funcional
 
 ```java
 import java.util.*;
@@ -1560,7 +1639,7 @@ public class Ejercicio02 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -1599,22 +1678,29 @@ classDiagram
     PushNotifier --> PushMessageFactory : usa
 ```
 
-### Justificación
-Sin Factory, cada `Notifier` tendría lógica de construcción de mensaje dispersa y duplicada. Sin Observer, el `Pedido` tendría que conocer y llamar manualmente a cada canal, rompiendo el principio abierto/cerrado al agregar un canal nuevo.
+### Justificacion
+
+Sin Factory, cada `Notifier` tendria logica de construccion de mensaje dispersa y duplicada. Sin Observer, el `Pedido` tendria que conocer y llamar manualmente a cada canal, rompiendo el principio abierto/cerrado al agregar un canal nuevo.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
 ## #03 — Sistema de Reportes Empresariales
+
 **Patrones:** Template Method + Factory Method
 
-### Rol de cada patrón
-- **Template Method:** define en `ReportGenerator` el esqueleto fijo del algoritmo (`fetchData → processData → applyFormat → exportFile`), dejando los dos últimos pasos como abstractos.
-- **Factory Method:** `ReportFactory` decide qué subclase (`PdfReport`, `ExcelReport`, `CsvReport`) instanciar según la solicitud, sin que el cliente la construya directamente.
+### Rol de cada patron
 
-### Cómo interactúan
-El cliente pide "reporte PDF" → la Factory construye `PdfReport` → el cliente llama `report.generate()` → el Template Method ejecuta los 4 pasos en orden, usando la implementación PDF para los pasos variables.
+**Template Method** define en `ReportGenerator` el esqueleto fijo del algoritmo (`fetchData → processData → applyFormat → exportFile`), dejando los dos ultimos pasos como abstractos.
 
-### Código funcional
+**Factory Method** `ReportFactory` decide que subclase (`PdfReport`, `ExcelReport`, `CsvReport`) instanciar segun la solicitud, sin que el cliente la construya directamente.
+
+### Como interactuan
+
+El cliente pide "reporte PDF" → la Factory construye `PdfReport` → el cliente llama `report.generate()` → el Template Method ejecuta los 4 pasos en orden, usando la implementacion PDF para los pasos variables.
+
+### Codigo funcional
 
 ```java
 abstract class ReportGenerator {
@@ -1669,7 +1755,7 @@ public class Ejercicio03 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -1694,22 +1780,29 @@ classDiagram
     ReportFactory ..> ReportGenerator : crea
 ```
 
-### Justificación
-Sin Template Method, los 4 pasos se repetirían (con pequeñas variaciones) en cada clase de reporte. Sin Factory Method, el cliente tendría que conocer y elegir directamente la clase concreta (`new PdfReport()`), acoplándose a la implementación.
+### Justificacion
+
+Sin Template Method, los 4 pasos se repetirian (con pequenas variaciones) en cada clase de reporte. Sin Factory Method, el cliente tendria que conocer y elegir directamente la clase concreta (`new PdfReport()`), acoplandose a la implementacion.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
 ## #04 — Plataforma de Videojuegos — Personajes
+
 **Patrones:** Builder + Decorator
 
-### Rol de cada patrón
-- **Builder:** construye el personaje paso a paso al inicio de la partida (armadura, arma, habilidades), evitando un constructor con muchos parámetros.
-- **Decorator:** agrega poderes temporales (escudo, velocidad, invisibilidad) en tiempo de ejecución sin modificar la clase base del personaje.
+### Rol de cada patron
 
-### Cómo interactúan
+**Builder** construye el personaje paso a paso al inicio de la partida (armadura, arma, habilidades), evitando un constructor con muchos parametros.
+
+**Decorator** agrega poderes temporales (escudo, velocidad, invisibilidad) en tiempo de ejecucion sin modificar la clase base del personaje.
+
+### Como interactuan
+
 Builder crea el personaje base configurable → durante la partida, Decorator envuelve el personaje con poderes temporales → al terminar el efecto, el wrapper se descarta sin afectar la clase base.
 
-### Código funcional
+### Codigo funcional
 
 ```java
 import java.util.*;
@@ -1789,7 +1882,7 @@ public class Ejercicio04 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -1826,22 +1919,29 @@ classDiagram
     CharacterDecorator <|-- SpeedDecorator
 ```
 
-### Justificación
-Sin Decorator: 2⁵ = 32 subclases para 5 poderes combinables. Con Decorator: 5 wrappers + 1 base = 6 clases. Sin Builder: un constructor con armadura, arma, habilidades y mejoras sería ilegible y propenso a errores de orden de parámetros.
+### Justificacion
+
+Sin Decorator: 2⁵ = 32 subclases para 5 poderes combinables. Con Decorator: 5 wrappers + 1 base = 6 clases. Sin Builder: un constructor con armadura, arma, habilidades y mejoras seria ilegible y propenso a errores de orden de parametros.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-## #05 — Integración con Sistema Bancario Antiguo
+## #05 — Integracion con Sistema Bancario Antiguo
+
 **Patrones:** Adapter + Facade
 
-### Rol de cada patrón
-- **Adapter:** traduce las llamadas modernas de `PaymentProcessor` al formato legado de `LegacyBankService` (`amount → cents`, `pay() → executeTransaction()`).
-- **Facade:** expone `procesarPago(monto)`, ocultando los 8 pasos de inicialización y uso del sistema legado.
+### Rol de cada patron
 
-### Cómo interactúan
-El desarrollador llama `BankFacade.procesarPago(monto)` → la Facade inicializa conexión, sesión y contexto → delega al `LegacyBankAdapter` → el Adapter traduce al formato legado → `LegacyBankService` ejecuta. El desarrollador nunca toca `LegacyBankService` directamente.
+**Adapter** traduce las llamadas modernas de `PaymentProcessor` al formato legado de `LegacyBankService` (`amount → cents`, `pay() → executeTransaction()`).
 
-### Código funcional
+**Facade** expone `procesarPago(monto)`, ocultando los 8 pasos de inicializacion y uso del sistema legado.
+
+### Como interactuan
+
+El desarrollador llama `BankFacade.procesarPago(monto)` → la Facade inicializa conexion, sesion y contexto → delega al `LegacyBankAdapter` → el Adapter traduce al formato legado → `LegacyBankService` ejecuta. El desarrollador nunca toca `LegacyBankService` directamente.
+
+### Codigo funcional
 
 ```java
 class LegacyBankService {
@@ -1874,7 +1974,7 @@ class LegacyBankAdapter implements PaymentProcessor {
     }
 
     public void pay(double amount) {
-        int cents = (int) Math.round(amount * 100); // traducción
+        int cents = (int) Math.round(amount * 100);
         legacy.executeTransaction(account, cents);
     }
 }
@@ -1906,7 +2006,7 @@ public class Ejercicio05 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -1936,22 +2036,29 @@ classDiagram
     BankFacade --> LegacyBankAdapter : delega pago
 ```
 
-### Justificación
-Adapter resuelve la incompatibilidad de interfaces; Facade resuelve la complejidad de uso. Son complementarios: la Facade usa el Adapter internamente, así el desarrollador externo no conoce ni la incompatibilidad ni los 8 pasos de inicialización.
+### Justificacion
+
+Adapter resuelve la incompatibilidad de interfaces; Facade resuelve la complejidad de uso. Son complementarios: la Facade usa el Adapter internamente, asi el desarrollador externo no conoce ni la incompatibilidad ni los 8 pasos de inicializacion.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
 ## #06 — Motor de Recomendaciones
+
 **Patrones:** Strategy + Observer
 
-### Rol de cada patrón
-- **Strategy:** permite intercambiar el algoritmo de recomendación (`GenreStrategy`, `HistoryStrategy`, `PopularityStrategy`) en tiempo de ejecución.
-- **Observer:** notifica automáticamente a `HomePageComponent`, `NotificationService` y `SuggestedListComponent` cuando cambian las preferencias del usuario.
+### Rol de cada patron
 
-### Cómo interactúan
+**Strategy** permite intercambiar el algoritmo de recomendacion (`GenreStrategy`, `HistoryStrategy`, `PopularityStrategy`) en tiempo de ejecucion.
+
+**Observer** notifica automaticamente a `HomePageComponent`, `NotificationService` y `SuggestedListComponent` cuando cambian las preferencias del usuario.
+
+### Como interactuan
+
 El usuario cambia preferencias → el perfil de usuario (Subject) notifica a sus Observers → cada Observer reactualiza su contenido usando el nuevo algoritmo Strategy configurado → la UI se actualiza sin polling.
 
-### Código funcional
+### Codigo funcional
 
 ```java
 import java.util.*;
@@ -2052,7 +2159,7 @@ public class Ejercicio06 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -2088,22 +2195,29 @@ classDiagram
     UserProfile --> PreferenceObserver : notifica
 ```
 
-### Justificación
-Strategy responde "cómo recomendar"; Observer responde "a quién avisar que cambió el cómo". Sin Observer, cada componente de UI tendría que hacer *polling* constante para detectar el cambio de algoritmo. Sin Strategy, cambiar de algoritmo requeriría modificar la clase `UserProfile`.
+### Justificacion
+
+Strategy responde "como recomendar"; Observer responde "a quien avisar que cambio el como". Sin Observer, cada componente de UI tendria que hacer polling constante para detectar el cambio de algoritmo. Sin Strategy, cambiar de algoritmo requeriria modificar la clase `UserProfile`.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-## #07 — Flujo de Aprobación de Documentos
+## #07 — Flujo de Aprobacion de Documentos
+
 **Patrones:** Chain of Responsibility + State
 
-### Rol de cada patrón
-- **Chain of Responsibility:** encadena los validadores (`AutorHandler`, `LiderHandler`, `JuridicoHandler`); cada uno decide si el documento continúa o se detiene la cadena.
-- **State:** el `Document` delega su comportamiento (`approve`, `reject`) al objeto `DocumentState` actual (`DraftState`, `InReviewState`, `ApprovedState`, `RejectedState`), eliminando los `switch` de estado.
+### Rol de cada patron
 
-### Cómo interactúan
-Un handler de la cadena procesa el documento → según su resultado, invoca `document.approve()` o `document.reject()` → el `DocumentState` actual ejecuta la transición correspondiente. El documento nunca tiene un `switch` de estados.
+**Chain of Responsibility** encadena los validadores (`AutorHandler`, `LiderHandler`, `JuridicoHandler`); cada uno decide si el documento continua o se detiene la cadena.
 
-### Código funcional
+**State** el `Document` delega su comportamiento (`approve`, `reject`) al objeto `DocumentState` actual (`DraftState`, `InReviewState`, `ApprovedState`, `RejectedState`), eliminando los `switch` de estado.
+
+### Como interactuan
+
+Un handler de la cadena procesa el documento → segun su resultado, invoca `document.approve()` o `document.reject()` → el `DocumentState` actual ejecuta la transicion correspondiente. El documento nunca tiene un `switch` de estados.
+
+### Codigo funcional
 
 ```java
 class Document {
@@ -2205,10 +2319,10 @@ public class Ejercicio07 {
         autor.setNext(lider).setNext(juridico);
 
         System.out.println("Estado inicial: " + doc.state.getClass().getSimpleName());
-        doc.approve(); // Draft -> InReview (entra al flujo de revisión)
+        doc.approve();
 
         System.out.println("\n=== Procesando cadena de validadores ===");
-        autor.handle(doc); // recorre la cadena y al final aprueba o rechaza
+        autor.handle(doc);
 
         System.out.println("\n=== Intento de rechazo tras estar aprobado ===");
         doc.reject();
@@ -2216,7 +2330,7 @@ public class Ejercicio07 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -2258,22 +2372,29 @@ classDiagram
     DocumentHandler --> DocumentHandler : next
 ```
 
-### Justificación
-Sin State, cada método de `Document` tendría un `switch(estado)`. Con State, cada estado encapsula su propio comportamiento. Sin Chain of Responsibility, el flujo de aprobación estaría codificado de forma rígida en un único método con múltiples `if`, dificultando reordenar o configurar etapas según el tipo de documento.
+### Justificacion
+
+Sin State, cada metodo de `Document` tendria un `switch(estado)`. Con State, cada estado encapsula su propio comportamiento. Sin Chain of Responsibility, el flujo de aprobacion estaria codificado de forma rigida en un unico metodo con multiples `if`, dificultando reordenar o configurar etapas segun el tipo de documento.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
 ## #08 — Sistema de Pedidos en Restaurante
+
 **Patrones:** Builder + Observer
 
-### Rol de cada patrón
-- **Builder:** construye el pedido personalizado paso a paso (`setSize`, `setMeat`, `addTopping`, `addSide`) y garantiza que el `Order` resultante sea válido e inmutable.
-- **Observer:** notifica a `KitchenService`, `BillingService` y `DeliveryService` cuando el pedido se confirma, sin que `Order` los conozca directamente.
+### Rol de cada patron
 
-### Cómo interactúan
+**Builder** construye el pedido personalizado paso a paso (`setSize`, `setMeat`, `addTopping`, `addSide`) y garantiza que el `Order` resultante sea valido e inmutable.
+
+**Observer** notifica a `KitchenService`, `BillingService` y `DeliveryService` cuando el pedido se confirma, sin que `Order` los conozca directamente.
+
+### Como interactuan
+
 El cliente configura el pedido con el Builder → llama `build()` que retorna un `Order` inmutable → el sistema invoca `order.confirm()` → el `Order` notifica a todos sus Observers → cada subsistema reacciona de forma independiente.
 
-### Código funcional
+### Codigo funcional
 
 ```java
 import java.util.*;
@@ -2362,7 +2483,7 @@ public class Ejercicio08 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -2397,22 +2518,29 @@ classDiagram
     Order --> OrderObserver : notifica
 ```
 
-### Justificación
-Builder garantiza que el pedido esté completo y válido antes de existir (invariantes verificadas en `build()`). Observer garantiza que la confirmación desencadene reacciones en cocina, facturación y domicilios sin acoplamiento. Son momentos distintos del ciclo de vida del pedido: **construcción** vs **notificación post-confirmación**.
+### Justificacion
+
+Builder garantiza que el pedido este completo y valido antes de existir (invariantes verificadas en `build()`). Observer garantiza que la confirmacion desencadene reacciones en cocina, facturacion y domicilios sin acoplamiento. Son momentos distintos del ciclo de vida del pedido: **construccion** vs **notificacion post-confirmacion**.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-## #09 — Sistema de Autenticación Empresarial
+## #09 — Sistema de Autenticacion Empresarial
+
 **Patrones:** Strategy + Chain of Responsibility
 
-### Rol de cada patrón
-- **Strategy:** selecciona el mecanismo de autenticación (`PasswordStrategy`, `GoogleStrategy`, `BiometricStrategy`) según el tipo de usuario.
-- **Chain of Responsibility:** procesa las validaciones posteriores en secuencia (`CredentialValidator → PermissionValidator → LocationValidator → TimeValidator`), donde cada eslabón puede detener el flujo.
+### Rol de cada patron
 
-### Cómo interactúan
-El usuario intenta acceder → `AuthService` selecciona la Strategy correcta → autenticación exitosa → el resultado pasa por la cadena de validadores → si todos aprueban, se concede el acceso. Strategy decide "cómo autentico"; Chain decide "si tengo acceso".
+**Strategy** selecciona el mecanismo de autenticacion (`PasswordStrategy`, `GoogleStrategy`, `BiometricStrategy`) segun el tipo de usuario.
 
-### Código funcional
+**Chain of Responsibility** procesa las validaciones posteriores en secuencia (`CredentialValidator → PermissionValidator → LocationValidator → TimeValidator`), donde cada eslabon puede detener el flujo.
+
+### Como interactuan
+
+El usuario intenta acceder → `AuthService` selecciona la Strategy correcta → autenticacion exitosa → el resultado pasa por la cadena de validadores → si todos aprueban, se concede el acceso. Strategy decide "como autentico"; Chain decide "si tengo acceso".
+
+### Codigo funcional
 
 ```java
 class Credentials {
@@ -2514,7 +2642,7 @@ public class Ejercicio09 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -2553,22 +2681,29 @@ classDiagram
     AuthService --> Validator : usa
 ```
 
-### Justificación
-Strategy = "qué llave uso para entrar" (autenticación: **quién eres**). Chain of Responsibility = "pasar los controles de seguridad después de entrar" (autorización: **qué puedes hacer**). Son fases distintas del proceso de acceso, y cada patrón resuelve una sin invadir la responsabilidad del otro.
+### Justificacion
+
+Strategy = "que llave uso para entrar" (autenticacion: **quien eres**). Chain of Responsibility = "pasar los controles de seguridad despues de entrar" (autorizacion: **que puedes hacer**). Son fases distintas del proceso de acceso, y cada patron resuelve una sin invadir la responsabilidad del otro.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-## #10 — Aplicación de Edición de Imágenes
+## #10 — Aplicacion de Edicion de Imagenes
+
 **Patrones:** Decorator + Command
 
-### Rol de cada patrón
-- **Decorator:** aplica filtros de forma acumulativa (`GrayscaleDecorator`, `SepiaDecorator`, `BrightnessDecorator`) envolviendo la imagen en cualquier orden, sin modificar la imagen base.
-- **Command:** encapsula cada operación del usuario como un objeto con `execute()`/`undo()`, permitiendo deshacer acciones de forma individual (no solo la última de forma global).
+### Rol de cada patron
 
-### Cómo interactúan
-El usuario aplica un filtro → se crea un `ApplyFilterCommand` que envuelve la imagen actual con un Decorator → el comando se agrega al historial → el usuario hace *undo* → el Command quita el Decorator de la cadena y restaura la imagen anterior.
+**Decorator** aplica filtros de forma acumulativa (`GrayscaleDecorator`, `SepiaDecorator`, `BrightnessDecorator`) envolviendo la imagen en cualquier orden, sin modificar la imagen base.
 
-### Código funcional
+**Command** encapsula cada operacion del usuario como un objeto con `execute()`/`undo()`, permitiendo deshacer acciones de forma individual (no solo la ultima de forma global).
+
+### Como interactuan
+
+El usuario aplica un filtro → se crea un `ApplyFilterCommand` que envuelve la imagen actual con un Decorator → el comando se agrega al historial → el usuario hace undo → el Command quita el Decorator de la cadena y restaura la imagen anterior.
+
+### Codigo funcional
 
 ```java
 import java.util.*;
@@ -2685,7 +2820,7 @@ public class Ejercicio10 {
 }
 ```
 
-### Diagrama UML 
+### Diagrama UML
 
 ```mermaid
 classDiagram
@@ -2730,107 +2865,127 @@ classDiagram
     ImageEditor o-- Image : current
 ```
 
-### Justificación
-Command resuelve el *undo* individual: cada operación queda encapsulada en su propio objeto y se apila en un historial; deshacer significa simplemente desenvolver (quitar el último wrapper) sin afectar la imagen base. Decorator evita que cada combinación de filtros requiera una clase nueva. Juntos forman el complemento perfecto: la imagen base nunca cambia, solo se envuelve y desenvuelve.
+### Justificacion
+
+Command resuelve el undo individual: cada operacion queda encapsulada en su propio objeto y se apila en un historial; deshacer significa simplemente desenvolver (quitar el ultimo wrapper) sin afectar la imagen base. Decorator evita que cada combinacion de filtros requiera una clase nueva. La imagen base nunca cambia, solo se envuelve y desenvuelve.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-## 📋 Criterios de Entrega — Checklist
+## Criterios de Entrega — Checklist
 
 | # | Criterio | Peso | Estado |
-|---|----------|------|--------|
-| 1 | Explicación del rol de cada patrón | 5% | ✅ Incluido en cada ejercicio |
-| 2 | Descripción de la interacción entre los dos patrones | 5% | ✅ Incluido en cada ejercicio |
-| 3 | Esquema de código que ilustre la solución propuesta | 40% | ✅ Código Java completo por ejercicio |
-| 4 | Demostración de ejecución de código - funcional | 50% | ✅ Cada `main()` es ejecutable y compilable de forma independiente |
+|---|---|---|---|
+| 1 | Explicacion del rol de cada patron | 5% |  Incluido en cada ejercicio |
+| 2 | Descripcion de la interaccion entre los dos patrones | 5% |  Incluido en cada ejercicio |
+| 3 | Esquema de codigo que ilustre la solucion propuesta | 40% |  Codigo Java completo por ejercicio |
+| 4 | Demostracion de ejecucion de codigo - funcional | 50% |  Cada `main()` es ejecutable y compilable de forma independiente |
 
-> **Nota de compilación:** cada bloque de código de este documento es **autocontenido** (no requiere imports externos salvo `java.util.*`) y puede compilarse y ejecutarse individualmente copiando su contenido a un archivo `EjercicioNN.java` y ejecutando:
+> **Nota de compilacion:** cada bloque de codigo es autocontenido (no requiere imports externos salvo `java.util.*`) y puede compilarse y ejecutarse individualmente copiando su contenido a un archivo `EjercicioNN.java` y ejecutando:
 > ```bash
 > javac EjercicioNN.java && java EjercicioNN
 > ```
 
-**Paquete:** `src/main/dosw/semana_3/`
-
-# Análisis de Requerimientos — Ejercicio
-## DOSW Company
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-## RF-01 — Inscripción a Programa Académico
+## Analisis de Requerimientos — Ejercicio
+
+**DOSW Company**
+
+---
+
+## RF-01 — Inscripcion a Programa Academico
 
 ### Nombre
-Registro de solicitud de inscripción a programa académico
 
-### Descripción
-El sistema debe permitir que un aspirante seleccione un programa académico desde la oferta académica del sitio web institucional y diligencie un formulario de admisión con sus datos básicos, con el fin de iniciar el proceso de inscripción.
+Registro de solicitud de inscripcion a programa academico
 
-### Cómo se ejecutará
-1. El usuario ingresa al menú **"Oferta Académica"**.
-2. Selecciona la categoría del programa (ej. Maestrías, Doctorado, Pregrado) y luego el programa específico (ej. *Ingeniería de Sistemas*).
-3. El sistema muestra la página informativa del programa seleccionado.
-4. El usuario hace clic en el botón **"Inscríbete"**.
-5. El sistema despliega el **Formulario de Admisión**.
-6. El usuario diligencia los campos solicitados y acepta la política de tratamiento de datos.
-7. El usuario hace clic en el botón **"Validar"**.
+### Descripcion
+
+El sistema debe permitir que un aspirante seleccione un programa academico desde la oferta academica del sitio web institucional y diligencie un formulario de admision con sus datos basicos, con el fin de iniciar el proceso de inscripcion.
+
+### Como se ejecutara
+
+1. El usuario ingresa al menu **"Oferta Academica"**.
+2. Selecciona la categoria del programa (ej. Maestrias, Doctorado, Pregrado) y luego el programa especifico (ej. *Ingenieria de Sistemas*).
+3. El sistema muestra la pagina informativa del programa seleccionado.
+4. El usuario hace clic en el boton **"Inscribete"**.
+5. El sistema despliega el **Formulario de Admision**.
+6. El usuario diligencia los campos solicitados y acepta la politica de tratamiento de datos.
+7. El usuario hace clic en el boton **"Validar"**.
 8. El sistema valida los campos obligatorios y, si todo es correcto, registra la solicitud.
 
 ### Actor Principal
-**Aspirante** (usuario externo interesado en inscribirse a un programa académico).
+
+**Aspirante** (usuario externo interesado en inscribirse a un programa academico).
 
 ### Precondiciones
+
 - El usuario debe tener acceso a internet y al sitio web institucional.
-- La oferta académica del programa debe estar publicada y disponible para inscripción.
-- El periodo de admisión correspondiente debe estar vigente.
+- La oferta academica del programa debe estar publicada y disponible para inscripcion.
+- El periodo de admision correspondiente debe estar vigente.
 
 ### Datos de Entrada
+
 - Nivel de estudio al cual desea inscribirse
 - Programa al cual desea inscribirse
-- Tipo de admisión
-- Categoría de admisión
-- Ciclo de admisión
+- Tipo de admision
+- Categoria de admision
+- Ciclo de admision
 - Tipo de documento de identidad
-- Número de documento de identidad
-- Aceptación de la política de tratamiento de datos
+- Numero de documento de identidad
+- Aceptacion de la politica de tratamiento de datos
 
 ### Datos de Salida
-- Confirmación/registro exitoso de la solicitud de inscripción
-- Mensaje de error indicando el campo obligatorio faltante (en caso de validación fallida)
 
-### Flujo Básico
-| Paso | Acción |
-|------|--------|
-| 1 | El usuario navega hasta el programa académico deseado |
-| 2 | El usuario hace clic en "Inscríbete" |
-| 3 | El sistema muestra el Formulario de Admisión |
-| 4 | El usuario completa todos los campos obligatorios y acepta la política de datos |
+- Confirmacion/registro exitoso de la solicitud de inscripcion
+- Mensaje de error indicando el campo obligatorio faltante (en caso de validacion fallida)
+
+### Flujo Basico
+
+| Paso | Accion |
+|---|---|
+| 1 | El usuario navega hasta el programa academico deseado |
+| 2 | El usuario hace clic en "Inscribete" |
+| 3 | El sistema muestra el Formulario de Admision |
+| 4 | El usuario completa todos los campos obligatorios y acepta la politica de datos |
 | 5 | El usuario presiona "Validar" |
 | 6 | El sistema confirma que los datos son correctos y completos |
-| 7 | El sistema registra la solicitud y notifica el éxito al usuario |
+| 7 | El sistema registra la solicitud y notifica el exito al usuario |
 
 ### Flujo Alterno (Error)
-| Paso | Acción |
-|------|--------|
-| 1 | El usuario presiona "Validar" sin completar un campo obligatorio (ej. "Tipo de Admisión") |
-| 2 | El sistema detecta el campo vacío |
-| 3 | El sistema muestra un mensaje emergente: *"El campo Tipo Admisión es obligatorio, por favor diligéncielo"* |
+
+| Paso | Accion |
+|---|---|
+| 1 | El usuario presiona "Validar" sin completar un campo obligatorio (ej. "Tipo de Admision") |
+| 2 | El sistema detecta el campo vacio |
+| 3 | El sistema muestra un mensaje emergente: *"El campo Tipo Admision es obligatorio, por favor diligencielo"* |
 | 4 | El usuario presiona "Aceptar" |
 | 5 | El sistema regresa al formulario para que el usuario complete el campo faltante |
-| 6 | El flujo se reanuda en el paso 4 del Flujo Básico |
+| 6 | El flujo se reanuda en el paso 4 del Flujo Basico |
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
-## ejercicio marca personal
+## Ejercicio Marca Personal
+
 <img width="1153" height="766" alt="image" src="https://github.com/user-attachments/assets/2a7f23aa-51ff-4702-b118-887c463dc72f" />
 
+[↑ Volver al indice](#indice-de-navegacion)
 
+---
 
-
-
-# SEMANA No 4 — [Proximamente]
+# SEMANA No 4 — Proximamente
 
 **Paquete:** `src/main/dosw/semana_4/`
 
 > Esta seccion se completara al inicio de la semana 4.
+
+[↑ Volver al indice](#indice-de-navegacion)
 
 ---
 
