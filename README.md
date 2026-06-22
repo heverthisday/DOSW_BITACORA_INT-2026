@@ -1,4 +1,4 @@
-# DOSW_BITACORA_INT-2026
+
 # DOSW BITACORA — Programacion Funcional con Java Streams
 
 **Asignatura:** DOSW  
@@ -1297,13 +1297,1534 @@ public class retoMewtwo {
 
 ---
 
-# SEMANA No 3 — [Proximamente]
+# SEMANA No 3 — analisis de requerimientos, principios solid y patrones de diseño
+
+# Taller de Refuerzo — Patrones de Diseño Combinados 
+**DOSW Company — Escuela Colombiana de Ingeniería Julio Garavito**
+
+> Para cada ejercicio se presenta: (1) rol de cada patrón, (2) interacción entre ambos, (3) esquema de clases completo en Java **compilable y ejecutable**, con un `main` que demuestra el funcionamiento, y (4) diagrama UML.
+
+---
+
+## #01 — Plataforma de Pagos Inteligentes
+**Patrones:** Strategy + Factory Method
+
+### Rol de cada patrón
+- **Strategy:** encapsula el algoritmo de pago de cada medio (Tarjeta, PSE, Nequi, PayPal) detrás de una interfaz común `PaymentStrategy`. El `Checkout` nunca sabe cuál implementación está usando.
+- **Factory Method:** decide, según el país del usuario, qué `PaymentStrategy` concreta debe construirse (`ColombiaPaymentFactory`, `UsaPaymentFactory`), sin que el cliente conozca la clase concreta.
+
+### Cómo interactúan
+El usuario indica su país → la Factory correspondiente construye la `PaymentStrategy` adecuada → el `Checkout` invoca `strategy.process(amount)` sin conocer la clase concreta. La Factory decide **qué** Strategy instanciar; el Checkout **nunca cambia**.
+
+### Código funcional
+
+```java
+import java.util.*;
+
+interface PaymentStrategy {
+    void process(double amount);
+}
+
+class TarjetaStrategy implements PaymentStrategy {
+    public void process(double amount) {
+        System.out.println("Procesando pago de $" + amount + " con Tarjeta de Crédito");
+    }
+}
+
+class PseStrategy implements PaymentStrategy {
+    public void process(double amount) {
+        System.out.println("Procesando pago de $" + amount + " con PSE");
+    }
+}
+
+class NequiStrategy implements PaymentStrategy {
+    public void process(double amount) {
+        System.out.println("Procesando pago de $" + amount + " con Nequi");
+    }
+}
+
+class PayPalStrategy implements PaymentStrategy {
+    public void process(double amount) {
+        System.out.println("Procesando pago de $" + amount + " con PayPal");
+    }
+}
+
+interface PaymentFactory {
+    PaymentStrategy create(String type);
+}
+
+class ColombiaPaymentFactory implements PaymentFactory {
+    public PaymentStrategy create(String type) {
+        switch (type.toUpperCase()) {
+            case "TARJETA": return new TarjetaStrategy();
+            case "PSE": return new PseStrategy();
+            case "NEQUI": return new NequiStrategy();
+            default: throw new IllegalArgumentException("Medio no soportado en Colombia: " + type);
+        }
+    }
+}
+
+class UsaPaymentFactory implements PaymentFactory {
+    public PaymentStrategy create(String type) {
+        switch (type.toUpperCase()) {
+            case "PAYPAL": return new PayPalStrategy();
+            case "TARJETA": return new TarjetaStrategy();
+            default: throw new IllegalArgumentException("Medio no soportado en USA: " + type);
+        }
+    }
+}
+
+class Checkout {
+    public void pagar(PaymentFactory factory, String medio, double monto) {
+        PaymentStrategy strategy = factory.create(medio);
+        strategy.process(monto);
+    }
+}
+
+public class Ejercicio01 {
+    public static void main(String[] args) {
+        Checkout checkout = new Checkout();
+
+        System.out.println("=== Cliente en Colombia ===");
+        PaymentFactory factoryCO = new ColombiaPaymentFactory();
+        checkout.pagar(factoryCO, "PSE", 150000);
+        checkout.pagar(factoryCO, "NEQUI", 50000);
+
+        System.out.println("\n=== Cliente en USA ===");
+        PaymentFactory factoryUS = new UsaPaymentFactory();
+        checkout.pagar(factoryUS, "PAYPAL", 99.99);
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class PaymentStrategy {
+        <<interface>>
+        +process(amount)
+    }
+    class TarjetaStrategy
+    class PseStrategy
+    class NequiStrategy
+    class PayPalStrategy
+    PaymentStrategy <|.. TarjetaStrategy
+    PaymentStrategy <|.. PseStrategy
+    PaymentStrategy <|.. NequiStrategy
+    PaymentStrategy <|.. PayPalStrategy
+
+    class PaymentFactory {
+        <<interface>>
+        +create(type) PaymentStrategy
+    }
+    class ColombiaPaymentFactory
+    class UsaPaymentFactory
+    PaymentFactory <|.. ColombiaPaymentFactory
+    PaymentFactory <|.. UsaPaymentFactory
+    PaymentFactory ..> PaymentStrategy : crea
+
+    class Checkout {
+        +pagar(factory, medio, monto)
+    }
+    Checkout --> PaymentFactory : usa
+    Checkout --> PaymentStrategy : usa
+```
+
+### Justificación
+Sin esta combinación, `Checkout` tendría un `if/switch` gigante mezclando lógica de país **y** de medio de pago, violando SRP. Con Strategy + Factory Method cada responsabilidad vive en su propia jerarquía: **cómo pagar** (Strategy) y **quién construye el que paga** (Factory). Agregar un nuevo medio o país no requiere tocar `Checkout`.
+
+---
+
+## #02 — Sistema de Notificaciones Multicanal
+**Patrones:** Observer + Factory Method
+
+### Rol de cada patrón
+- **Observer:** desacopla el `Pedido` (Subject) de los canales de notificación (`EmailNotifier`, `SmsNotifier`, `PushNotifier`). Agregar un canal nuevo no modifica el Pedido.
+- **Factory Method:** cada `Notifier` usa una `MessageFactory` propia para construir el mensaje con el formato correcto de su canal (HTML, texto plano, JSON).
+
+### Cómo interactúan
+El Pedido cambia de estado → notifica a todos los Observers activos → cada Observer llama a su Factory para construir el mensaje correcto para ese canal → envía.
+
+### Código funcional
+
+```java
+import java.util.*;
+
+class OrderEvent {
+    String orderId;
+    String status;
+    OrderEvent(String orderId, String status) {
+        this.orderId = orderId;
+        this.status = status;
+    }
+}
+
+interface Message {
+    void send();
+}
+
+class EmailMessage implements Message {
+    String html;
+    EmailMessage(String html) { this.html = html; }
+    public void send() { System.out.println("[EMAIL] Enviando HTML: " + html); }
+}
+
+class SmsMessage implements Message {
+    String text;
+    SmsMessage(String text) { this.text = text; }
+    public void send() { System.out.println("[SMS] Enviando texto (160 chars max): " + text); }
+}
+
+class PushMessage implements Message {
+    String json;
+    PushMessage(String json) { this.json = json; }
+    public void send() { System.out.println("[PUSH] Enviando payload JSON: " + json); }
+}
+
+interface MessageFactory {
+    Message build(OrderEvent event);
+}
+
+class EmailMessageFactory implements MessageFactory {
+    public Message build(OrderEvent event) {
+        return new EmailMessage("<h1>Pedido " + event.orderId + "</h1><p>Estado: " + event.status + "</p>");
+    }
+}
+
+class SmsMessageFactory implements MessageFactory {
+    public Message build(OrderEvent event) {
+        return new SmsMessage("Pedido " + event.orderId + " ahora esta: " + event.status);
+    }
+}
+
+class PushMessageFactory implements MessageFactory {
+    public Message build(OrderEvent event) {
+        return new PushMessage("{\"orderId\":\"" + event.orderId + "\",\"status\":\"" + event.status + "\"}");
+    }
+}
+
+interface NotificationObserver {
+    void notify(OrderEvent event);
+}
+
+class EmailNotifier implements NotificationObserver {
+    MessageFactory factory = new EmailMessageFactory();
+    public void notify(OrderEvent event) { factory.build(event).send(); }
+}
+
+class SmsNotifier implements NotificationObserver {
+    MessageFactory factory = new SmsMessageFactory();
+    public void notify(OrderEvent event) { factory.build(event).send(); }
+}
+
+class PushNotifier implements NotificationObserver {
+    MessageFactory factory = new PushMessageFactory();
+    public void notify(OrderEvent event) { factory.build(event).send(); }
+}
+
+class Pedido {
+    private List<NotificationObserver> observers = new ArrayList<>();
+    private String orderId;
+    private String estado;
+
+    Pedido(String orderId) {
+        this.orderId = orderId;
+        this.estado = "pendiente";
+    }
+
+    public void addObserver(NotificationObserver o) { observers.add(o); }
+
+    public void cambiarEstado(String nuevoEstado) {
+        this.estado = nuevoEstado;
+        OrderEvent event = new OrderEvent(orderId, nuevoEstado);
+        for (NotificationObserver o : observers) {
+            o.notify(event);
+        }
+    }
+}
+
+public class Ejercicio02 {
+    public static void main(String[] args) {
+        Pedido pedido = new Pedido("ORD-001");
+        pedido.addObserver(new EmailNotifier());
+        pedido.addObserver(new SmsNotifier());
+        pedido.addObserver(new PushNotifier());
+
+        System.out.println("=== Pedido pasa a 'enviado' ===");
+        pedido.cambiarEstado("enviado");
+
+        System.out.println("\n=== Pedido pasa a 'entregado' ===");
+        pedido.cambiarEstado("entregado");
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class Pedido {
+        -orderId
+        -estado
+        -observers
+        +addObserver(o)
+        +cambiarEstado(nuevoEstado)
+    }
+    class NotificationObserver {
+        <<interface>>
+        +notify(event)
+    }
+    class EmailNotifier
+    class SmsNotifier
+    class PushNotifier
+    Pedido --> NotificationObserver : notifica
+    NotificationObserver <|.. EmailNotifier
+    NotificationObserver <|.. SmsNotifier
+    NotificationObserver <|.. PushNotifier
+
+    class MessageFactory {
+        <<interface>>
+        +build(event) Message
+    }
+    class EmailMessageFactory
+    class SmsMessageFactory
+    class PushMessageFactory
+    MessageFactory <|.. EmailMessageFactory
+    MessageFactory <|.. SmsMessageFactory
+    MessageFactory <|.. PushMessageFactory
+
+    EmailNotifier --> EmailMessageFactory : usa
+    SmsNotifier --> SmsMessageFactory : usa
+    PushNotifier --> PushMessageFactory : usa
+```
+
+### Justificación
+Sin Factory, cada `Notifier` tendría lógica de construcción de mensaje dispersa y duplicada. Sin Observer, el `Pedido` tendría que conocer y llamar manualmente a cada canal, rompiendo el principio abierto/cerrado al agregar un canal nuevo.
+
+---
+
+## #03 — Sistema de Reportes Empresariales
+**Patrones:** Template Method + Factory Method
+
+### Rol de cada patrón
+- **Template Method:** define en `ReportGenerator` el esqueleto fijo del algoritmo (`fetchData → processData → applyFormat → exportFile`), dejando los dos últimos pasos como abstractos.
+- **Factory Method:** `ReportFactory` decide qué subclase (`PdfReport`, `ExcelReport`, `CsvReport`) instanciar según la solicitud, sin que el cliente la construya directamente.
+
+### Cómo interactúan
+El cliente pide "reporte PDF" → la Factory construye `PdfReport` → el cliente llama `report.generate()` → el Template Method ejecuta los 4 pasos en orden, usando la implementación PDF para los pasos variables.
+
+### Código funcional
+
+```java
+abstract class ReportGenerator {
+    public final void generate() {
+        fetchData();
+        processData();
+        applyFormat();
+        exportFile();
+    }
+    protected void fetchData() { System.out.println("Obteniendo datos de la base de datos..."); }
+    protected void processData() { System.out.println("Procesando información..."); }
+    protected abstract void applyFormat();
+    protected abstract void exportFile();
+}
+
+class PdfReport extends ReportGenerator {
+    protected void applyFormat() { System.out.println("Aplicando formato PDF (layout, estilos)"); }
+    protected void exportFile() { System.out.println("Exportando archivo .pdf"); }
+}
+
+class ExcelReport extends ReportGenerator {
+    protected void applyFormat() { System.out.println("Aplicando formato Excel (celdas, fórmulas)"); }
+    protected void exportFile() { System.out.println("Exportando archivo .xlsx"); }
+}
+
+class CsvReport extends ReportGenerator {
+    protected void applyFormat() { System.out.println("Aplicando formato CSV (separadores por coma)"); }
+    protected void exportFile() { System.out.println("Exportando archivo .csv"); }
+}
+
+class ReportFactory {
+    public static ReportGenerator create(String type) {
+        switch (type.toUpperCase()) {
+            case "PDF": return new PdfReport();
+            case "EXCEL": return new ExcelReport();
+            case "CSV": return new CsvReport();
+            default: throw new IllegalArgumentException("Tipo de reporte no soportado: " + type);
+        }
+    }
+}
+
+public class Ejercicio03 {
+    public static void main(String[] args) {
+        System.out.println("=== Generando reporte PDF ===");
+        ReportGenerator pdf = ReportFactory.create("PDF");
+        pdf.generate();
+
+        System.out.println("\n=== Generando reporte CSV ===");
+        ReportGenerator csv = ReportFactory.create("CSV");
+        csv.generate();
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class ReportGenerator {
+        <<abstract>>
+        +generate()
+        #fetchData()
+        #processData()
+        #applyFormat()
+        #exportFile()
+    }
+    class PdfReport
+    class ExcelReport
+    class CsvReport
+    ReportGenerator <|-- PdfReport
+    ReportGenerator <|-- ExcelReport
+    ReportGenerator <|-- CsvReport
+
+    class ReportFactory {
+        +create(type) ReportGenerator
+    }
+    ReportFactory ..> ReportGenerator : crea
+```
+
+### Justificación
+Sin Template Method, los 4 pasos se repetirían (con pequeñas variaciones) en cada clase de reporte. Sin Factory Method, el cliente tendría que conocer y elegir directamente la clase concreta (`new PdfReport()`), acoplándose a la implementación.
+
+---
+
+## #04 — Plataforma de Videojuegos — Personajes
+**Patrones:** Builder + Decorator
+
+### Rol de cada patrón
+- **Builder:** construye el personaje paso a paso al inicio de la partida (armadura, arma, habilidades), evitando un constructor con muchos parámetros.
+- **Decorator:** agrega poderes temporales (escudo, velocidad, invisibilidad) en tiempo de ejecución sin modificar la clase base del personaje.
+
+### Cómo interactúan
+Builder crea el personaje base configurable → durante la partida, Decorator envuelve el personaje con poderes temporales → al terminar el efecto, el wrapper se descarta sin afectar la clase base.
+
+### Código funcional
+
+```java
+import java.util.*;
+
+interface GameCharacter {
+    void attack();
+}
+
+class BaseCharacter implements GameCharacter {
+    String name, armor, weapon;
+    List<String> skills;
+
+    BaseCharacter(String name, String armor, String weapon, List<String> skills) {
+        this.name = name;
+        this.armor = armor;
+        this.weapon = weapon;
+        this.skills = skills;
+    }
+
+    public void attack() {
+        System.out.println(name + " ataca con " + weapon + " (armadura: " + armor + ", habilidades: " + skills + ")");
+    }
+}
+
+class WarriorBuilder {
+    private String name, armor, weapon;
+    private List<String> skills = new ArrayList<>();
+
+    public WarriorBuilder(String name) { this.name = name; }
+    public WarriorBuilder setArmor(String armor) { this.armor = armor; return this; }
+    public WarriorBuilder setWeapon(String weapon) { this.weapon = weapon; return this; }
+    public WarriorBuilder setSkill(String skill) { this.skills.add(skill); return this; }
+    public GameCharacter build() { return new BaseCharacter(name, armor, weapon, skills); }
+}
+
+class CharacterDirector {
+    public static GameCharacter crearGuerreroElite(String name) {
+        return new WarriorBuilder(name)
+                .setArmor("acero reforzado")
+                .setWeapon("espada larga")
+                .setSkill("furia de batalla")
+                .build();
+    }
+}
+
+abstract class CharacterDecorator implements GameCharacter {
+    protected GameCharacter wrapped;
+    CharacterDecorator(GameCharacter wrapped) { this.wrapped = wrapped; }
+}
+
+class ShieldDecorator extends CharacterDecorator {
+    ShieldDecorator(GameCharacter wrapped) { super(wrapped); }
+    public void attack() {
+        System.out.println("[Escudo de hielo] reduce daño recibido en este turno");
+        wrapped.attack();
+    }
+}
+
+class SpeedDecorator extends CharacterDecorator {
+    SpeedDecorator(GameCharacter wrapped) { super(wrapped); }
+    public void attack() {
+        System.out.println("[Velocidad extra] segundo ataque habilitado");
+        wrapped.attack();
+    }
+}
+
+public class Ejercicio04 {
+    public static void main(String[] args) {
+        GameCharacter warrior = CharacterDirector.crearGuerreroElite("Thorgar");
+        System.out.println("=== Personaje base (Builder) ===");
+        warrior.attack();
+
+        System.out.println("\n=== Personaje con poderes temporales (Decorator) ===");
+        GameCharacter powered = new ShieldDecorator(new SpeedDecorator(warrior));
+        powered.attack();
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class GameCharacter {
+        <<interface>>
+        +attack()
+    }
+    class BaseCharacter
+    GameCharacter <|.. BaseCharacter
+
+    class WarriorBuilder {
+        +setArmor(armor)
+        +setWeapon(weapon)
+        +setSkill(skill)
+        +build() GameCharacter
+    }
+    WarriorBuilder ..> BaseCharacter : construye
+
+    class CharacterDirector {
+        +crearGuerreroElite(name) GameCharacter
+    }
+    CharacterDirector --> WarriorBuilder : usa
+
+    class CharacterDecorator {
+        <<abstract>>
+        #wrapped: GameCharacter
+    }
+    GameCharacter <|.. CharacterDecorator
+    CharacterDecorator o-- GameCharacter : envuelve
+
+    class ShieldDecorator
+    class SpeedDecorator
+    CharacterDecorator <|-- ShieldDecorator
+    CharacterDecorator <|-- SpeedDecorator
+```
+
+### Justificación
+Sin Decorator: 2⁵ = 32 subclases para 5 poderes combinables. Con Decorator: 5 wrappers + 1 base = 6 clases. Sin Builder: un constructor con armadura, arma, habilidades y mejoras sería ilegible y propenso a errores de orden de parámetros.
+
+---
+
+## #05 — Integración con Sistema Bancario Antiguo
+**Patrones:** Adapter + Facade
+
+### Rol de cada patrón
+- **Adapter:** traduce las llamadas modernas de `PaymentProcessor` al formato legado de `LegacyBankService` (`amount → cents`, `pay() → executeTransaction()`).
+- **Facade:** expone `procesarPago(monto)`, ocultando los 8 pasos de inicialización y uso del sistema legado.
+
+### Cómo interactúan
+El desarrollador llama `BankFacade.procesarPago(monto)` → la Facade inicializa conexión, sesión y contexto → delega al `LegacyBankAdapter` → el Adapter traduce al formato legado → `LegacyBankService` ejecuta. El desarrollador nunca toca `LegacyBankService` directamente.
+
+### Código funcional
+
+```java
+class LegacyBankService {
+    public void initConnection() { System.out.println("Legacy: iniciando conexión..."); }
+    public void authenticateSession() { System.out.println("Legacy: autenticando sesión..."); }
+    public void openContext() { System.out.println("Legacy: abriendo contexto..."); }
+    public void executeTransaction(String account, int cents) {
+        System.out.println("Legacy: ejecutando transacción en cuenta " + account + " por " + cents + " centavos");
+    }
+    public void closeContext() { System.out.println("Legacy: cerrando contexto..."); }
+    public void closeSession() { System.out.println("Legacy: cerrando sesión..."); }
+    public void closeConnection() { System.out.println("Legacy: cerrando conexión..."); }
+    public boolean verifyBalance(String account) {
+        System.out.println("Legacy: verificando saldo de " + account + "...");
+        return true;
+    }
+}
+
+interface PaymentProcessor {
+    void pay(double amount);
+}
+
+class LegacyBankAdapter implements PaymentProcessor {
+    private LegacyBankService legacy;
+    private String account;
+
+    LegacyBankAdapter(LegacyBankService legacy, String account) {
+        this.legacy = legacy;
+        this.account = account;
+    }
+
+    public void pay(double amount) {
+        int cents = (int) Math.round(amount * 100); // traducción
+        legacy.executeTransaction(account, cents);
+    }
+}
+
+class BankFacade {
+    private LegacyBankService legacy = new LegacyBankService();
+
+    public void procesarPago(double monto, String cuenta) {
+        legacy.initConnection();
+        legacy.authenticateSession();
+        legacy.openContext();
+        legacy.verifyBalance(cuenta);
+
+        PaymentProcessor adapter = new LegacyBankAdapter(legacy, cuenta);
+        adapter.pay(monto);
+
+        legacy.closeContext();
+        legacy.closeSession();
+        legacy.closeConnection();
+    }
+}
+
+public class Ejercicio05 {
+    public static void main(String[] args) {
+        BankFacade facade = new BankFacade();
+        System.out.println("=== Desarrollador solo llama a procesarPago() ===");
+        facade.procesarPago(150.75, "ACC-001");
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class LegacyBankService {
+        +initConnection()
+        +authenticateSession()
+        +openContext()
+        +executeTransaction(account, cents)
+        +closeContext()
+        +closeSession()
+        +closeConnection()
+        +verifyBalance(account) bool
+    }
+
+    class PaymentProcessor {
+        <<interface>>
+        +pay(amount)
+    }
+    class LegacyBankAdapter
+    PaymentProcessor <|.. LegacyBankAdapter
+    LegacyBankAdapter --> LegacyBankService : traduce llamadas
+
+    class BankFacade {
+        +procesarPago(monto, cuenta)
+    }
+    BankFacade --> LegacyBankService : orquesta pasos
+    BankFacade --> LegacyBankAdapter : delega pago
+```
+
+### Justificación
+Adapter resuelve la incompatibilidad de interfaces; Facade resuelve la complejidad de uso. Son complementarios: la Facade usa el Adapter internamente, así el desarrollador externo no conoce ni la incompatibilidad ni los 8 pasos de inicialización.
+
+---
+
+## #06 — Motor de Recomendaciones
+**Patrones:** Strategy + Observer
+
+### Rol de cada patrón
+- **Strategy:** permite intercambiar el algoritmo de recomendación (`GenreStrategy`, `HistoryStrategy`, `PopularityStrategy`) en tiempo de ejecución.
+- **Observer:** notifica automáticamente a `HomePageComponent`, `NotificationService` y `SuggestedListComponent` cuando cambian las preferencias del usuario.
+
+### Cómo interactúan
+El usuario cambia preferencias → el perfil de usuario (Subject) notifica a sus Observers → cada Observer reactualiza su contenido usando el nuevo algoritmo Strategy configurado → la UI se actualiza sin polling.
+
+### Código funcional
+
+```java
+import java.util.*;
+
+class Content {
+    String title;
+    Content(String title) { this.title = title; }
+    public String toString() { return title; }
+}
+
+class User {
+    String name;
+    String preference;
+    User(String name, String preference) { this.name = name; this.preference = preference; }
+}
+
+interface RecommendationAlgorithm {
+    List<Content> recommend(User user);
+}
+
+class GenreStrategy implements RecommendationAlgorithm {
+    public List<Content> recommend(User user) {
+        return Arrays.asList(new Content("Película de " + user.preference + " #1"),
+                              new Content("Película de " + user.preference + " #2"));
+    }
+}
+
+class HistoryStrategy implements RecommendationAlgorithm {
+    public List<Content> recommend(User user) {
+        return Arrays.asList(new Content("Basado en tu historial: Serie X"),
+                              new Content("Basado en tu historial: Serie Y"));
+    }
+}
+
+class PopularityStrategy implements RecommendationAlgorithm {
+    public List<Content> recommend(User user) {
+        return Arrays.asList(new Content("Top 1 en tendencias"), new Content("Top 2 en tendencias"));
+    }
+}
+
+interface PreferenceObserver {
+    void onPreferenceChanged(User user, RecommendationAlgorithm algorithm);
+}
+
+class HomePageComponent implements PreferenceObserver {
+    public void onPreferenceChanged(User user, RecommendationAlgorithm algorithm) {
+        System.out.println("[HomePage] actualizando con: " + algorithm.recommend(user));
+    }
+}
+
+class NotificationService implements PreferenceObserver {
+    public void onPreferenceChanged(User user, RecommendationAlgorithm algorithm) {
+        System.out.println("[Notificaciones] enviando push de nueva recomendación a " + user.name);
+    }
+}
+
+class SuggestedListComponent implements PreferenceObserver {
+    public void onPreferenceChanged(User user, RecommendationAlgorithm algorithm) {
+        System.out.println("[Sugeridos] lista actualizada: " + algorithm.recommend(user));
+    }
+}
+
+class UserProfile {
+    private User user;
+    private RecommendationAlgorithm algorithm;
+    private List<PreferenceObserver> observers = new ArrayList<>();
+
+    UserProfile(User user, RecommendationAlgorithm algorithm) {
+        this.user = user;
+        this.algorithm = algorithm;
+    }
+
+    public void addObserver(PreferenceObserver o) { observers.add(o); }
+
+    public void cambiarAlgoritmo(RecommendationAlgorithm nuevoAlgoritmo) {
+        this.algorithm = nuevoAlgoritmo;
+        for (PreferenceObserver o : observers) {
+            o.onPreferenceChanged(user, algorithm);
+        }
+    }
+}
+
+public class Ejercicio06 {
+    public static void main(String[] args) {
+        User user = new User("Camila", "ciencia ficción");
+        UserProfile profile = new UserProfile(user, new GenreStrategy());
+
+        profile.addObserver(new HomePageComponent());
+        profile.addObserver(new NotificationService());
+        profile.addObserver(new SuggestedListComponent());
+
+        System.out.println("=== Usuario cambia preferencia a 'Popularidad' ===");
+        profile.cambiarAlgoritmo(new PopularityStrategy());
+
+        System.out.println("\n=== Usuario cambia preferencia a 'Historial' ===");
+        profile.cambiarAlgoritmo(new HistoryStrategy());
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class RecommendationAlgorithm {
+        <<interface>>
+        +recommend(user) List~Content~
+    }
+    class GenreStrategy
+    class HistoryStrategy
+    class PopularityStrategy
+    RecommendationAlgorithm <|.. GenreStrategy
+    RecommendationAlgorithm <|.. HistoryStrategy
+    RecommendationAlgorithm <|.. PopularityStrategy
+
+    class PreferenceObserver {
+        <<interface>>
+        +onPreferenceChanged(user, algorithm)
+    }
+    class HomePageComponent
+    class NotificationService
+    class SuggestedListComponent
+    PreferenceObserver <|.. HomePageComponent
+    PreferenceObserver <|.. NotificationService
+    PreferenceObserver <|.. SuggestedListComponent
+
+    class UserProfile {
+        -algorithm: RecommendationAlgorithm
+        -observers: List
+        +cambiarAlgoritmo(nuevo)
+        +addObserver(o)
+    }
+    UserProfile o-- RecommendationAlgorithm : usa
+    UserProfile --> PreferenceObserver : notifica
+```
+
+### Justificación
+Strategy responde "cómo recomendar"; Observer responde "a quién avisar que cambió el cómo". Sin Observer, cada componente de UI tendría que hacer *polling* constante para detectar el cambio de algoritmo. Sin Strategy, cambiar de algoritmo requeriría modificar la clase `UserProfile`.
+
+---
+
+## #07 — Flujo de Aprobación de Documentos
+**Patrones:** Chain of Responsibility + State
+
+### Rol de cada patrón
+- **Chain of Responsibility:** encadena los validadores (`AutorHandler`, `LiderHandler`, `JuridicoHandler`); cada uno decide si el documento continúa o se detiene la cadena.
+- **State:** el `Document` delega su comportamiento (`approve`, `reject`) al objeto `DocumentState` actual (`DraftState`, `InReviewState`, `ApprovedState`, `RejectedState`), eliminando los `switch` de estado.
+
+### Cómo interactúan
+Un handler de la cadena procesa el documento → según su resultado, invoca `document.approve()` o `document.reject()` → el `DocumentState` actual ejecuta la transición correspondiente. El documento nunca tiene un `switch` de estados.
+
+### Código funcional
+
+```java
+class Document {
+    String name;
+    DocumentState state;
+
+    Document(String name) {
+        this.name = name;
+        this.state = new DraftState();
+    }
+
+    public void setState(DocumentState state) {
+        this.state = state;
+        System.out.println("Documento '" + name + "' -> nuevo estado: " + state.getClass().getSimpleName());
+    }
+
+    public void approve() { state.approve(this); }
+    public void reject() { state.reject(this); }
+}
+
+interface DocumentState {
+    void approve(Document doc);
+    void reject(Document doc);
+}
+
+class DraftState implements DocumentState {
+    public void approve(Document doc) { doc.setState(new InReviewState()); }
+    public void reject(Document doc) { System.out.println("No se puede rechazar un borrador."); }
+}
+
+class InReviewState implements DocumentState {
+    public void approve(Document doc) { doc.setState(new ApprovedState()); }
+    public void reject(Document doc) { doc.setState(new RejectedState()); }
+}
+
+class ApprovedState implements DocumentState {
+    public void approve(Document doc) { System.out.println("El documento ya está aprobado."); }
+    public void reject(Document doc) { System.out.println("No se puede rechazar un documento ya aprobado."); }
+}
+
+class RejectedState implements DocumentState {
+    public void approve(Document doc) { System.out.println("No se puede aprobar un documento rechazado."); }
+    public void reject(Document doc) { System.out.println("El documento ya está rechazado."); }
+}
+
+abstract class DocumentHandler {
+    protected DocumentHandler next;
+
+    public DocumentHandler setNext(DocumentHandler next) {
+        this.next = next;
+        return next;
+    }
+
+    public void handle(Document doc) {
+        boolean aprobado = review(doc);
+        if (!aprobado) {
+            doc.reject();
+            System.out.println("Cadena detenida en " + getClass().getSimpleName());
+            return;
+        }
+        if (next != null) {
+            next.handle(doc);
+        } else {
+            doc.approve();
+        }
+    }
+
+    protected abstract boolean review(Document doc);
+}
+
+class AutorHandler extends DocumentHandler {
+    protected boolean review(Document doc) {
+        System.out.println("Revisión del autor: OK para " + doc.name);
+        return true;
+    }
+}
+
+class LiderHandler extends DocumentHandler {
+    protected boolean review(Document doc) {
+        System.out.println("Revisión del líder: OK para " + doc.name);
+        return true;
+    }
+}
+
+class JuridicoHandler extends DocumentHandler {
+    protected boolean review(Document doc) {
+        System.out.println("Revisión jurídica: OK para " + doc.name);
+        return true;
+    }
+}
+
+public class Ejercicio07 {
+    public static void main(String[] args) {
+        Document doc = new Document("Contrato-2026-001");
+
+        AutorHandler autor = new AutorHandler();
+        LiderHandler lider = new LiderHandler();
+        JuridicoHandler juridico = new JuridicoHandler();
+        autor.setNext(lider).setNext(juridico);
+
+        System.out.println("Estado inicial: " + doc.state.getClass().getSimpleName());
+        doc.approve(); // Draft -> InReview (entra al flujo de revisión)
+
+        System.out.println("\n=== Procesando cadena de validadores ===");
+        autor.handle(doc); // recorre la cadena y al final aprueba o rechaza
+
+        System.out.println("\n=== Intento de rechazo tras estar aprobado ===");
+        doc.reject();
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class Document {
+        -state: DocumentState
+        +approve()
+        +reject()
+        +setState(state)
+    }
+    class DocumentState {
+        <<interface>>
+        +approve(doc)
+        +reject(doc)
+    }
+    class DraftState
+    class InReviewState
+    class ApprovedState
+    class RejectedState
+    DocumentState <|.. DraftState
+    DocumentState <|.. InReviewState
+    DocumentState <|.. ApprovedState
+    DocumentState <|.. RejectedState
+    Document o-- DocumentState
+
+    class DocumentHandler {
+        <<abstract>>
+        #next: DocumentHandler
+        +setNext(next)
+        +handle(doc)
+        #review(doc) bool
+    }
+    class AutorHandler
+    class LiderHandler
+    class JuridicoHandler
+    DocumentHandler <|-- AutorHandler
+    DocumentHandler <|-- LiderHandler
+    DocumentHandler <|-- JuridicoHandler
+    DocumentHandler --> Document : procesa
+    DocumentHandler --> DocumentHandler : next
+```
+
+### Justificación
+Sin State, cada método de `Document` tendría un `switch(estado)`. Con State, cada estado encapsula su propio comportamiento. Sin Chain of Responsibility, el flujo de aprobación estaría codificado de forma rígida en un único método con múltiples `if`, dificultando reordenar o configurar etapas según el tipo de documento.
+
+---
+
+## #08 — Sistema de Pedidos en Restaurante
+**Patrones:** Builder + Observer
+
+### Rol de cada patrón
+- **Builder:** construye el pedido personalizado paso a paso (`setSize`, `setMeat`, `addTopping`, `addSide`) y garantiza que el `Order` resultante sea válido e inmutable.
+- **Observer:** notifica a `KitchenService`, `BillingService` y `DeliveryService` cuando el pedido se confirma, sin que `Order` los conozca directamente.
+
+### Cómo interactúan
+El cliente configura el pedido con el Builder → llama `build()` que retorna un `Order` inmutable → el sistema invoca `order.confirm()` → el `Order` notifica a todos sus Observers → cada subsistema reacciona de forma independiente.
+
+### Código funcional
+
+```java
+import java.util.*;
+
+enum Size { SMALL, MEDIUM, LARGE }
+enum Meat { SINGLE_BEEF, DOUBLE_BEEF, CHICKEN, VEGGIE }
+
+interface OrderObserver {
+    void onOrderConfirmed(Order order);
+}
+
+class Order {
+    private final Size size;
+    private final Meat meat;
+    private final List<String> toppings;
+    private final List<String> sides;
+    private final List<OrderObserver> observers = new ArrayList<>();
+
+    private Order(OrderBuilder builder) {
+        this.size = builder.size;
+        this.meat = builder.meat;
+        this.toppings = builder.toppings;
+        this.sides = builder.sides;
+    }
+
+    public void addObserver(OrderObserver o) { observers.add(o); }
+
+    public void confirm() {
+        System.out.println("Pedido confirmado: " + this);
+        for (OrderObserver o : observers) {
+            o.onOrderConfirmed(this);
+        }
+    }
+
+    public String toString() {
+        return size + " " + meat + " con " + toppings + " y acompañamientos " + sides;
+    }
+
+    public static class OrderBuilder {
+        private Size size;
+        private Meat meat;
+        private List<String> toppings = new ArrayList<>();
+        private List<String> sides = new ArrayList<>();
+
+        public OrderBuilder setSize(Size size) { this.size = size; return this; }
+        public OrderBuilder setMeat(Meat meat) { this.meat = meat; return this; }
+        public OrderBuilder addTopping(String... t) { toppings.addAll(Arrays.asList(t)); return this; }
+        public OrderBuilder addSide(String... s) { sides.addAll(Arrays.asList(s)); return this; }
+
+        public Order build() {
+            if (size == null || meat == null) {
+                throw new IllegalStateException("Pedido incompleto: tamaño y carne son obligatorios");
+            }
+            return new Order(this);
+        }
+    }
+}
+
+class KitchenService implements OrderObserver {
+    public void onOrderConfirmed(Order order) { System.out.println("[Cocina] preparando: " + order); }
+}
+
+class BillingService implements OrderObserver {
+    public void onOrderConfirmed(Order order) { System.out.println("[Facturación] generando cuenta para: " + order); }
+}
+
+class DeliveryService implements OrderObserver {
+    public void onOrderConfirmed(Order order) { System.out.println("[Domicilio] preparando ruta para: " + order); }
+}
+
+public class Ejercicio08 {
+    public static void main(String[] args) {
+        Order order = new Order.OrderBuilder()
+                .setSize(Size.LARGE)
+                .setMeat(Meat.DOUBLE_BEEF)
+                .addTopping("queso", "lechuga")
+                .addSide("papas", "gaseosa")
+                .build();
+
+        order.addObserver(new KitchenService());
+        order.addObserver(new BillingService());
+        order.addObserver(new DeliveryService());
+
+        order.confirm();
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class Order {
+        -size: Size
+        -meat: Meat
+        -toppings: List
+        -sides: List
+        -observers: List
+        +addObserver(o)
+        +confirm()
+    }
+    class OrderBuilder {
+        +setSize(size)
+        +setMeat(meat)
+        +addTopping(t)
+        +addSide(s)
+        +build() Order
+    }
+    OrderBuilder ..> Order : construye
+
+    class OrderObserver {
+        <<interface>>
+        +onOrderConfirmed(order)
+    }
+    class KitchenService
+    class BillingService
+    class DeliveryService
+    OrderObserver <|.. KitchenService
+    OrderObserver <|.. BillingService
+    OrderObserver <|.. DeliveryService
+    Order --> OrderObserver : notifica
+```
+
+### Justificación
+Builder garantiza que el pedido esté completo y válido antes de existir (invariantes verificadas en `build()`). Observer garantiza que la confirmación desencadene reacciones en cocina, facturación y domicilios sin acoplamiento. Son momentos distintos del ciclo de vida del pedido: **construcción** vs **notificación post-confirmación**.
+
+---
+
+## #09 — Sistema de Autenticación Empresarial
+**Patrones:** Strategy + Chain of Responsibility
+
+### Rol de cada patrón
+- **Strategy:** selecciona el mecanismo de autenticación (`PasswordStrategy`, `GoogleStrategy`, `BiometricStrategy`) según el tipo de usuario.
+- **Chain of Responsibility:** procesa las validaciones posteriores en secuencia (`CredentialValidator → PermissionValidator → LocationValidator → TimeValidator`), donde cada eslabón puede detener el flujo.
+
+### Cómo interactúan
+El usuario intenta acceder → `AuthService` selecciona la Strategy correcta → autenticación exitosa → el resultado pasa por la cadena de validadores → si todos aprueban, se concede el acceso. Strategy decide "cómo autentico"; Chain decide "si tengo acceso".
+
+### Código funcional
+
+```java
+class Credentials {
+    String username;
+    String type;
+    Credentials(String username, String type) { this.username = username; this.type = type; }
+}
+
+class AuthResult {
+    boolean success;
+    String username;
+    AuthResult(boolean success, String username) { this.success = success; this.username = username; }
+}
+
+interface AuthStrategy {
+    AuthResult authenticate(Credentials c);
+}
+
+class PasswordStrategy implements AuthStrategy {
+    public AuthResult authenticate(Credentials c) {
+        System.out.println("Autenticando con usuario/contraseña: " + c.username);
+        return new AuthResult(true, c.username);
+    }
+}
+
+class GoogleStrategy implements AuthStrategy {
+    public AuthResult authenticate(Credentials c) {
+        System.out.println("Autenticando con Google OAuth: " + c.username);
+        return new AuthResult(true, c.username);
+    }
+}
+
+class BiometricStrategy implements AuthStrategy {
+    public AuthResult authenticate(Credentials c) {
+        System.out.println("Autenticando con biometría: " + c.username);
+        return new AuthResult(true, c.username);
+    }
+}
+
+class AccessDeniedException extends RuntimeException {
+    AccessDeniedException(String msg) { super(msg); }
+}
+
+abstract class Validator {
+    protected Validator next;
+    public Validator setNext(Validator next) { this.next = next; return next; }
+
+    public void validate(AuthResult result) {
+        check(result);
+        if (next != null) next.validate(result);
+        else System.out.println("Acceso concedido a " + result.username);
+    }
+
+    protected abstract void check(AuthResult result);
+}
+
+class CredentialValidator extends Validator {
+    protected void check(AuthResult result) {
+        if (!result.success) throw new AccessDeniedException("Credenciales inválidas");
+        System.out.println("Validación de credenciales: OK");
+    }
+}
+
+class PermissionValidator extends Validator {
+    protected void check(AuthResult result) { System.out.println("Validación de permisos: OK"); }
+}
+
+class LocationValidator extends Validator {
+    protected void check(AuthResult result) { System.out.println("Validación de ubicación: OK"); }
+}
+
+class TimeValidator extends Validator {
+    protected void check(AuthResult result) { System.out.println("Validación de horario laboral: OK"); }
+}
+
+class AuthService {
+    public void login(AuthStrategy strategy, Credentials c, Validator chain) {
+        AuthResult result = strategy.authenticate(c);
+        chain.validate(result);
+    }
+}
+
+public class Ejercicio09 {
+    public static void main(String[] args) {
+        CredentialValidator cred = new CredentialValidator();
+        PermissionValidator perm = new PermissionValidator();
+        LocationValidator loc = new LocationValidator();
+        TimeValidator time = new TimeValidator();
+        cred.setNext(perm).setNext(loc).setNext(time);
+
+        AuthService authService = new AuthService();
+
+        System.out.println("=== Login con Google ===");
+        authService.login(new GoogleStrategy(), new Credentials("camila@empresa.com", "GOOGLE"), cred);
+
+        System.out.println("\n=== Login con Biometría ===");
+        authService.login(new BiometricStrategy(), new Credentials("juan@empresa.com", "BIOMETRIC"), cred);
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class AuthStrategy {
+        <<interface>>
+        +authenticate(c) AuthResult
+    }
+    class PasswordStrategy
+    class GoogleStrategy
+    class BiometricStrategy
+    AuthStrategy <|.. PasswordStrategy
+    AuthStrategy <|.. GoogleStrategy
+    AuthStrategy <|.. BiometricStrategy
+
+    class Validator {
+        <<abstract>>
+        #next: Validator
+        +setNext(next)
+        +validate(result)
+        #check(result)
+    }
+    class CredentialValidator
+    class PermissionValidator
+    class LocationValidator
+    class TimeValidator
+    Validator <|-- CredentialValidator
+    Validator <|-- PermissionValidator
+    Validator <|-- LocationValidator
+    Validator <|-- TimeValidator
+    Validator --> Validator : next
+
+    class AuthService {
+        +login(strategy, c, chain)
+    }
+    AuthService --> AuthStrategy : usa
+    AuthService --> Validator : usa
+```
+
+### Justificación
+Strategy = "qué llave uso para entrar" (autenticación: **quién eres**). Chain of Responsibility = "pasar los controles de seguridad después de entrar" (autorización: **qué puedes hacer**). Son fases distintas del proceso de acceso, y cada patrón resuelve una sin invadir la responsabilidad del otro.
+
+---
+
+## #10 — Aplicación de Edición de Imágenes
+**Patrones:** Decorator + Command
+
+### Rol de cada patrón
+- **Decorator:** aplica filtros de forma acumulativa (`GrayscaleDecorator`, `SepiaDecorator`, `BrightnessDecorator`) envolviendo la imagen en cualquier orden, sin modificar la imagen base.
+- **Command:** encapsula cada operación del usuario como un objeto con `execute()`/`undo()`, permitiendo deshacer acciones de forma individual (no solo la última de forma global).
+
+### Cómo interactúan
+El usuario aplica un filtro → se crea un `ApplyFilterCommand` que envuelve la imagen actual con un Decorator → el comando se agrega al historial → el usuario hace *undo* → el Command quita el Decorator de la cadena y restaura la imagen anterior.
+
+### Código funcional
+
+```java
+import java.util.*;
+
+interface Image {
+    String render();
+}
+
+class BaseImage implements Image {
+    private String name;
+    BaseImage(String name) { this.name = name; }
+    public String render() { return "Imagen[" + name + "]"; }
+}
+
+abstract class ImageDecorator implements Image {
+    protected Image wrapped;
+    ImageDecorator(Image wrapped) { this.wrapped = wrapped; }
+    public Image getWrapped() { return wrapped; }
+}
+
+class GrayscaleDecorator extends ImageDecorator {
+    GrayscaleDecorator(Image wrapped) { super(wrapped); }
+    public String render() { return wrapped.render() + " + Blanco/Negro"; }
+}
+
+class SepiaDecorator extends ImageDecorator {
+    SepiaDecorator(Image wrapped) { super(wrapped); }
+    public String render() { return wrapped.render() + " + Sepia"; }
+}
+
+class BrightnessDecorator extends ImageDecorator {
+    BrightnessDecorator(Image wrapped) { super(wrapped); }
+    public String render() { return wrapped.render() + " + Brillo"; }
+}
+
+interface ImageCommand {
+    void execute();
+    void undo();
+}
+
+class ImageEditor {
+    private Image current;
+    private Deque<ImageCommand> history = new ArrayDeque<>();
+
+    ImageEditor(Image base) { this.current = base; }
+
+    public Image getCurrent() { return current; }
+    public void setCurrent(Image img) { this.current = img; }
+
+    public void executeCommand(ImageCommand cmd) {
+        cmd.execute();
+        history.push(cmd);
+    }
+
+    public void undo() {
+        if (!history.isEmpty()) {
+            history.pop().undo();
+        } else {
+            System.out.println("No hay acciones para deshacer");
+        }
+    }
+}
+
+class ApplyFilterCommand implements ImageCommand {
+    private ImageEditor editor;
+    private String filterType;
+
+    ApplyFilterCommand(ImageEditor editor, String filterType) {
+        this.editor = editor;
+        this.filterType = filterType;
+    }
+
+    public void execute() {
+        Image current = editor.getCurrent();
+        Image filtered;
+        switch (filterType) {
+            case "GRAYSCALE": filtered = new GrayscaleDecorator(current); break;
+            case "SEPIA": filtered = new SepiaDecorator(current); break;
+            case "BRIGHTNESS": filtered = new BrightnessDecorator(current); break;
+            default: throw new IllegalArgumentException("Filtro no soportado");
+        }
+        editor.setCurrent(filtered);
+        System.out.println("Aplicado " + filterType + " -> " + editor.getCurrent().render());
+    }
+
+    public void undo() {
+        Image current = editor.getCurrent();
+        if (current instanceof ImageDecorator) {
+            editor.setCurrent(((ImageDecorator) current).getWrapped());
+            System.out.println("Deshecho " + filterType + " -> " + editor.getCurrent().render());
+        }
+    }
+}
+
+public class Ejercicio10 {
+    public static void main(String[] args) {
+        Image base = new BaseImage("foto.jpg");
+        ImageEditor editor = new ImageEditor(base);
+
+        editor.executeCommand(new ApplyFilterCommand(editor, "GRAYSCALE"));
+        editor.executeCommand(new ApplyFilterCommand(editor, "SEPIA"));
+        editor.executeCommand(new ApplyFilterCommand(editor, "BRIGHTNESS"));
+
+        System.out.println("\nResultado final: " + editor.getCurrent().render());
+
+        System.out.println("\n=== Deshaciendo última acción (Brillo) ===");
+        editor.undo();
+        System.out.println("Estado actual: " + editor.getCurrent().render());
+
+        System.out.println("\n=== Deshaciendo otra acción (Sepia) ===");
+        editor.undo();
+        System.out.println("Estado actual: " + editor.getCurrent().render());
+    }
+}
+```
+
+### Diagrama UML 
+
+```mermaid
+classDiagram
+    class Image {
+        <<interface>>
+        +render() String
+    }
+    class BaseImage
+    Image <|.. BaseImage
+
+    class ImageDecorator {
+        <<abstract>>
+        #wrapped: Image
+        +getWrapped() Image
+    }
+    Image <|.. ImageDecorator
+    ImageDecorator o-- Image : envuelve
+
+    class GrayscaleDecorator
+    class SepiaDecorator
+    class BrightnessDecorator
+    ImageDecorator <|-- GrayscaleDecorator
+    ImageDecorator <|-- SepiaDecorator
+    ImageDecorator <|-- BrightnessDecorator
+
+    class ImageCommand {
+        <<interface>>
+        +execute()
+        +undo()
+    }
+    class ApplyFilterCommand
+    ImageCommand <|.. ApplyFilterCommand
+    ApplyFilterCommand --> ImageDecorator : crea/quita
+
+    class ImageEditor {
+        -current: Image
+        -history: Deque
+        +executeCommand(cmd)
+        +undo()
+    }
+    ImageEditor --> ImageCommand : ejecuta
+    ImageEditor o-- Image : current
+```
+
+### Justificación
+Command resuelve el *undo* individual: cada operación queda encapsulada en su propio objeto y se apila en un historial; deshacer significa simplemente desenvolver (quitar el último wrapper) sin afectar la imagen base. Decorator evita que cada combinación de filtros requiera una clase nueva. Juntos forman el complemento perfecto: la imagen base nunca cambia, solo se envuelve y desenvuelve.
+
+---
+
+## 📋 Criterios de Entrega — Checklist
+
+| # | Criterio | Peso | Estado |
+|---|----------|------|--------|
+| 1 | Explicación del rol de cada patrón | 5% | ✅ Incluido en cada ejercicio |
+| 2 | Descripción de la interacción entre los dos patrones | 5% | ✅ Incluido en cada ejercicio |
+| 3 | Esquema de código que ilustre la solución propuesta | 40% | ✅ Código Java completo por ejercicio |
+| 4 | Demostración de ejecución de código - funcional | 50% | ✅ Cada `main()` es ejecutable y compilable de forma independiente |
+
+> **Nota de compilación:** cada bloque de código de este documento es **autocontenido** (no requiere imports externos salvo `java.util.*`) y puede compilarse y ejecutarse individualmente copiando su contenido a un archivo `EjercicioNN.java` y ejecutando:
+> ```bash
+> javac EjercicioNN.java && java EjercicioNN
+> ```
 
 **Paquete:** `src/main/dosw/semana_3/`
 
-> Esta seccion se completara al inicio de la semana 3.
+# Análisis de Requerimientos — Ejercicio
+## DOSW Company
 
 ---
+
+## RF-01 — Inscripción a Programa Académico
+
+### Nombre
+Registro de solicitud de inscripción a programa académico
+
+### Descripción
+El sistema debe permitir que un aspirante seleccione un programa académico desde la oferta académica del sitio web institucional y diligencie un formulario de admisión con sus datos básicos, con el fin de iniciar el proceso de inscripción.
+
+### Cómo se ejecutará
+1. El usuario ingresa al menú **"Oferta Académica"**.
+2. Selecciona la categoría del programa (ej. Maestrías, Doctorado, Pregrado) y luego el programa específico (ej. *Ingeniería de Sistemas*).
+3. El sistema muestra la página informativa del programa seleccionado.
+4. El usuario hace clic en el botón **"Inscríbete"**.
+5. El sistema despliega el **Formulario de Admisión**.
+6. El usuario diligencia los campos solicitados y acepta la política de tratamiento de datos.
+7. El usuario hace clic en el botón **"Validar"**.
+8. El sistema valida los campos obligatorios y, si todo es correcto, registra la solicitud.
+
+### Actor Principal
+**Aspirante** (usuario externo interesado en inscribirse a un programa académico).
+
+### Precondiciones
+- El usuario debe tener acceso a internet y al sitio web institucional.
+- La oferta académica del programa debe estar publicada y disponible para inscripción.
+- El periodo de admisión correspondiente debe estar vigente.
+
+### Datos de Entrada
+- Nivel de estudio al cual desea inscribirse
+- Programa al cual desea inscribirse
+- Tipo de admisión
+- Categoría de admisión
+- Ciclo de admisión
+- Tipo de documento de identidad
+- Número de documento de identidad
+- Aceptación de la política de tratamiento de datos
+
+### Datos de Salida
+- Confirmación/registro exitoso de la solicitud de inscripción
+- Mensaje de error indicando el campo obligatorio faltante (en caso de validación fallida)
+
+### Flujo Básico
+| Paso | Acción |
+|------|--------|
+| 1 | El usuario navega hasta el programa académico deseado |
+| 2 | El usuario hace clic en "Inscríbete" |
+| 3 | El sistema muestra el Formulario de Admisión |
+| 4 | El usuario completa todos los campos obligatorios y acepta la política de datos |
+| 5 | El usuario presiona "Validar" |
+| 6 | El sistema confirma que los datos son correctos y completos |
+| 7 | El sistema registra la solicitud y notifica el éxito al usuario |
+
+### Flujo Alterno (Error)
+| Paso | Acción |
+|------|--------|
+| 1 | El usuario presiona "Validar" sin completar un campo obligatorio (ej. "Tipo de Admisión") |
+| 2 | El sistema detecta el campo vacío |
+| 3 | El sistema muestra un mensaje emergente: *"El campo Tipo Admisión es obligatorio, por favor diligéncielo"* |
+| 4 | El usuario presiona "Aceptar" |
+| 5 | El sistema regresa al formulario para que el usuario complete el campo faltante |
+| 6 | El flujo se reanuda en el paso 4 del Flujo Básico |
+
+---
+
+## ejercicio marca personal
+<img width="1153" height="766" alt="image" src="https://github.com/user-attachments/assets/2a7f23aa-51ff-4702-b118-887c463dc72f" />
+
+
+
+
 
 # SEMANA No 4 — [Proximamente]
 
