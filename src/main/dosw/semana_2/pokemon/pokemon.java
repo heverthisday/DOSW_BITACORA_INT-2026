@@ -91,4 +91,5 @@ public class pokemon {
     public void setLegendario(boolean legendario) {
         this.legendario = legendario;
     }
+
 }

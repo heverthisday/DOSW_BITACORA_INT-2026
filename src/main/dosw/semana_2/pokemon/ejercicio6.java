@@ -10,5 +10,6 @@ public class ejercicio6 {
                 .map(ejercicio1.Pokemon::getName)
                 .distinct()
                 .collect(Collectors.toList());
+        System.out.println(nombres);
     }
 }
